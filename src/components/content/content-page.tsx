@@ -1,0 +1,104 @@
+import Link from "next/link";
+import type { ReactNode } from "react";
+
+type ContentPageProps = {
+  eyebrow?: string;
+  title: string;
+  description: string;
+  updated?: string;
+  children: ReactNode;
+};
+
+type ContentSectionProps = {
+  id: string;
+  title: string;
+  children: ReactNode;
+};
+
+type CalloutProps = {
+  title: string;
+  children: ReactNode;
+  tone?: "neutral" | "notice" | "warning";
+};
+
+export function ContentPage({
+  eyebrow,
+  title,
+  description,
+  updated,
+  children,
+}: ContentPageProps) {
+  return (
+    <div className="content-shell">
+      <div className="content-shell__inner">
+        <article>
+          <header className="content-header">
+            {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
+            <h1>{title}</h1>
+            <p className="content-header__lede">{description}</p>
+            {updated ? (
+              <p className="content-header__updated">
+                Effective date: <time dateTime="2026-07-15">{updated}</time>
+              </p>
+            ) : null}
+          </header>
+
+          <div className="content-body">{children}</div>
+        </article>
+
+        <nav className="content-footer-nav" aria-label="More information">
+          <ul>
+            {[
+              ["/how-to-play", "How to play"],
+              ["/categories", "Pattern lab"],
+              ["/about", "About"],
+              ["/privacy", "Privacy"],
+              ["/terms", "Terms"],
+              ["/contact", "Contact"],
+            ].map(([href, label]) => (
+              <li key={href}>
+                <Link href={href}>{label}</Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </div>
+  );
+}
+
+export function ContentSection({ id, title, children }: ContentSectionProps) {
+  const headingId = `${id}-heading`;
+
+  return (
+    <section className="content-section" id={id} aria-labelledby={headingId}>
+      <h2 id={headingId}>{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+export function Callout({ title, children, tone = "neutral" }: CalloutProps) {
+  return (
+    <aside className="content-callout" data-tone={tone}>
+      <h2>{title}</h2>
+      {children}
+    </aside>
+  );
+}
+
+export function InlineLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link className="inline-link" href={href}>
+      {children}
+    </Link>
+  );
+}
+
+export function PrimaryContentLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link className="button button--primary" href={href}>
+      {children}
+    </Link>
+  );
+}
