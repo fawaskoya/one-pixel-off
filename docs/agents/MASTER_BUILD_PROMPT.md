@@ -141,7 +141,7 @@ Report outcome, files, user-visible behavior, deterministic/version impact, test
 
 ## Accessibility/design truthfulness
 
-Current cells are native buttons with Tab/Enter/Space. Arrow-key roving focus is not implemented. Cells scale fluidly with the square board so an intrinsic minimum cannot overflow dense grids; smallest/shortest viewport target size still requires device QA. Forced-colors support is basic and does not explicitly distinguish wrong/target pseudo-elements. Treat these as known hardening tasks, not completed claims.
+Current cells are native buttons with one roving Tab stop, Arrow/Home/End grid movement, Enter/Space activation, and resolved wrong/target accessible labels. Cells scale fluidly with the square board so an intrinsic minimum cannot overflow dense grids; smallest/shortest viewport target size still requires device QA. Forced-colors support is basic and does not yet have recorded wrong/target verification. Treat those remaining items as hardening tasks, not completed claims.
 
 ## Growth/ads limits
 

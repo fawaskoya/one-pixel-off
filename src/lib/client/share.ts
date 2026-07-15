@@ -11,16 +11,9 @@ function isUserCancellation(error: unknown): boolean {
   );
 }
 
-export async function shareChallenge(
-  url: string,
-  score: number,
+async function shareWithFallback(
+  shareData: Readonly<{ title: string; text: string; url: string }>,
 ): Promise<ShareOutcome> {
-  const shareData = {
-    title: "One Pixel Off challenge",
-    text: `I scored ${score} in One Pixel Off. Can your eyes beat mine?`,
-    url,
-  };
-
   if (typeof navigator.share === "function") {
     try {
       await navigator.share(shareData);
@@ -33,9 +26,32 @@ export async function shareChallenge(
   }
 
   try {
-    await navigator.clipboard.writeText(url);
+    await navigator.clipboard.writeText(shareData.url);
     return "copied";
   } catch {
     return "manual-copy-required";
   }
+}
+
+export async function shareChallenge(
+  url: string,
+  score: number,
+): Promise<ShareOutcome> {
+  return shareWithFallback({
+    title: "One Pixel Off challenge",
+    text: `I scored ${score} in One Pixel Off. Can your eyes beat mine?`,
+    url,
+  });
+}
+
+export async function shareFocusRun(
+  url: string,
+  score: number,
+  boardsCleared: number,
+): Promise<ShareOutcome> {
+  return shareWithFallback({
+    title: "One Pixel Off Focus Run",
+    text: `I cleared ${boardsCleared} board${boardsCleared === 1 ? "" : "s"} and scored ${score}. How deep can you go?`,
+    url,
+  });
 }

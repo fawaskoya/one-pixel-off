@@ -5,8 +5,8 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "One Pixel Off",
     short_name: "Pixel Off",
     description:
-      "Find the single altered tile in five code-generated visual puzzles.",
-    start_url: "/play",
+      "Find the single altered tile in escalating code-generated visual puzzles.",
+    start_url: "/focus",
     display: "standalone",
     background_color: "#090C11",
     theme_color: "#090C11",

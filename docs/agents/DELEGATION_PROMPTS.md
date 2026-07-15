@@ -55,7 +55,7 @@ Own only [COMPONENT/STYLE/TEST FILES]. Consume existing pixel domain APIs; do no
 
 Render setup, ready, playing, round_result, session_result exactly. Boards are square gridSize 4|5|6. Preserve no pre-reveal data-target attribute, native button labels, wrong persistence, 100ms tick dispatch, deadline authority, target reveal, and share fallback. No ad component belongs in GameShell.
 
-Current keyboard baseline is Tab + Enter/Space; arrow-key roving focus is a roadmap enhancement and must be implemented/tested before claimed. Cells are fluid to prevent board overflow; verify their actual target size at narrow and short viewports. Verify pointer, keyboard, all square sizes, wrong/repeat/found/timeout, narrow/landscape, reduced motion, forced colors, and focus/status behavior. Report current limitations honestly.
+Current keyboard baseline uses one roving Tab stop, Arrow/Home/End movement, and native Enter/Space activation. Cells are fluid to prevent board overflow; verify their actual target size at narrow and short viewports. Verify pointer, keyboard, all square sizes, wrong/repeat/found/timeout, narrow/landscape, reduced motion, forced colors, and focus/status behavior. Report current limitations honestly.
 ```
 
 ## 6. PWA agent
@@ -69,7 +69,7 @@ Do not claim guaranteed offline Quick, cached app shell, update prompt, or phase
 ## 7. Accessibility QA agent
 
 ```text
-Audit [BUILD/URL] read-only first. Current cells are native buttons with row/column labels and normal Tab/Enter/Space. Arrow navigation, explicit phase focus movement, rich timer announcements, and forced-color wrong/target differentiation are not implemented claims.
+Audit [BUILD/URL] read-only first. Current cells are native buttons with row/column plus resolved-state labels, one roving Tab stop, Arrow/Home/End movement, and native Enter/Space activation. Explicit phase focus movement, rich timer announcements, and manually verified forced-color wrong/target differentiation are not implemented claims.
 
 Test setup through five rounds on pointer and keyboard; 4x4, 5x5, 6x6; ≤380px, short landscape, 200% zoom, reduced motion, forced colors, wrong/found/timeout, share error. Measure board containment and actual cell target size. Inspect target leaks in DOM/accessibility/style before result. Return severity, reproduction, evidence, expected behavior, smallest fix, and owned files. Do not claim equivalent nonvisual puzzle play.
 ```

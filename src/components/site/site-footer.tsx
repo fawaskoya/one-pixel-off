@@ -2,6 +2,8 @@ import Link from "next/link";
 import { BrandMark } from "./brand-mark";
 
 const footerLinks = [
+  ["Focus Run", "/focus"],
+  ["Classic Five", "/play"],
   ["How to play", "/how-to-play"],
   ["Pattern lab", "/categories"],
   ["About", "/about"],
@@ -16,7 +18,7 @@ export function SiteFooter() {
       <div className="shell site-footer__grid">
         <div className="site-footer__brand">
           <BrandMark />
-          <p>One anomaly. Fifteen seconds. Infinite deterministic boards.</p>
+          <p>One anomaly. Three focus charges. Infinite deterministic boards.</p>
         </div>
         <nav className="footer-nav" aria-label="Footer navigation">
           {footerLinks.map(([label, href]) => (

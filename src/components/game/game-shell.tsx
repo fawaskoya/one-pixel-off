@@ -1,8 +1,8 @@
 "use client";
 
-import { memo, useEffect, useRef, useState, type CSSProperties } from "react";
+import Link from "next/link";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
-  PIXEL_PALETTES,
   PIXEL_ROUND_DURATION_MS,
   createPixelGameState,
   dailySeedAt,
@@ -15,16 +15,14 @@ import {
   selectRemainingMs,
   selectTotalScore,
   selectTotalWrongTaps,
-  type ColorRole,
   type PixelGameAction,
   type PixelGameState,
   type PixelSessionMode,
   type PreparedPixelSession,
-  type VectorGlyphDescriptor,
-  type VectorPrimitive,
 } from "@/domain/pixel";
 import { recordPixelSession } from "@/lib/client/pixel-storage";
 import { shareChallenge, type ShareOutcome } from "@/lib/client/share";
+import { PuzzleBoard } from "./puzzle-board";
 
 type GameShellProps = {
   initialMode?: PixelSessionMode;
@@ -33,79 +31,11 @@ type GameShellProps = {
   challengeError?: string;
 };
 
-type PuzzleBoardProps = {
-  state: Exclude<PixelGameState, { phase: "ready" | "session_result" }>;
-  onCell: (index: number) => void;
-};
-
 const modeCopy: Record<PixelSessionMode, string> = {
   quick: "Quick scan",
   daily: "Daily scan",
   challenge: "Friend challenge",
 };
-
-function colorForRole(
-  role: ColorRole,
-  palette: (typeof PIXEL_PALETTES)[number],
-): string {
-  if (role === "none") return "none";
-  return palette[role];
-}
-
-function PrimitiveShape({
-  primitive,
-  palette,
-}: {
-  primitive: VectorPrimitive;
-  palette: (typeof PIXEL_PALETTES)[number];
-}) {
-  const shared = {
-    fill: colorForRole(primitive.fill, palette),
-    stroke: colorForRole(primitive.stroke, palette),
-    strokeWidth: primitive.strokeWidth,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    vectorEffect: "non-scaling-stroke" as const,
-    transform:
-      primitive.rotationDeg === 0
-        ? undefined
-        : `rotate(${primitive.rotationDeg} 50 50)`,
-  };
-
-  if (primitive.kind === "circle") {
-    const [cx, cy, radius] = primitive.geometry;
-    return <circle {...shared} cx={cx} cy={cy} r={radius} />;
-  }
-  if (primitive.kind === "rect") {
-    const [x, y, width, height, radius] = primitive.geometry;
-    return <rect {...shared} x={x} y={y} width={width} height={height} rx={radius} />;
-  }
-  if (primitive.kind === "line") {
-    const [x1, y1, x2, y2] = primitive.geometry;
-    return <line {...shared} x1={x1} y1={y1} x2={x2} y2={y2} />;
-  }
-  const points: string[] = [];
-  for (let index = 0; index < primitive.geometry.length; index += 2) {
-    points.push(`${primitive.geometry[index]},${primitive.geometry[index + 1]}`);
-  }
-  return <polygon {...shared} points={points.join(" ")} />;
-}
-
-const Glyph = memo(function Glyph({
-  glyph,
-  palette,
-}: {
-  glyph: VectorGlyphDescriptor;
-  palette: (typeof PIXEL_PALETTES)[number];
-}) {
-  return (
-    <svg aria-hidden="true" focusable="false" viewBox="0 0 100 100">
-      {glyph.primitives.map((primitive, index) => (
-        <PrimitiveShape key={`${primitive.kind}-${index}`} primitive={primitive} palette={palette} />
-      ))}
-    </svg>
-  );
-});
 
 function RoundTrack({ current, completed }: { current: number; completed: number }) {
   return (
@@ -119,53 +49,6 @@ function RoundTrack({ current, completed }: { current: number; completed: number
         />
       ))}
     </span>
-  );
-}
-
-function PuzzleBoard({ state, onCell }: PuzzleBoardProps) {
-  const puzzle = selectCurrentPuzzle(state);
-  const palette = PIXEL_PALETTES.find((item) => item.id === puzzle.paletteId) ?? PIXEL_PALETTES[0];
-  const isPlaying = state.phase === "playing";
-  const wrongIndexes = isPlaying ? state.wrongCellIndexes : state.outcome.wrongCellIndexes;
-  const wrongIndexSet = new Set(wrongIndexes);
-  const reveal = state.phase === "round_result";
-  const boardStyle = {
-    "--puzzle-columns": puzzle.gridSize,
-  } as CSSProperties;
-
-  return (
-    <div className="puzzle-frame">
-      <div
-        className="puzzle-board"
-        role="group"
-        aria-label={`${puzzle.gridSize} by ${puzzle.gridSize} pattern grid`}
-        style={boardStyle}
-      >
-        {puzzle.cells.map((cell) => (
-          <button
-            aria-label={`Tile ${cell.row + 1}, ${cell.column + 1}`}
-            aria-pressed={wrongIndexSet.has(cell.index)}
-            className="puzzle-cell"
-            data-target={reveal && cell.index === puzzle.targetIndex ? true : undefined}
-            data-wrong={wrongIndexSet.has(cell.index) ? true : undefined}
-            disabled={!isPlaying}
-            key={cell.index}
-            onClick={() => onCell(cell.index)}
-            style={{
-              "--cell-background": palette.background,
-              "--cell-foreground": palette.primary,
-            } as CSSProperties}
-            type="button"
-          >
-            <Glyph glyph={cell.glyph} palette={palette} />
-          </button>
-        ))}
-      </div>
-      <div className="puzzle-instruction">
-        <span>{puzzle.familyId} / {puzzle.difficulty}</span>
-        <span>{reveal ? "target revealed" : "select one tile"}</span>
-      </div>
-    </div>
   );
 }
 
@@ -460,7 +343,12 @@ export function GameShell({
             {seconds}
           </div>
           <div className="timer-rail" data-urgent={remainingMs <= 5_000} style={timerStyle} aria-hidden="true"><i /></div>
-          <PuzzleBoard state={state} onCell={tapCell} />
+          <PuzzleBoard
+            interactive
+            onCell={tapCell}
+            puzzle={selectCurrentPuzzle(state)}
+            wrongCellIndexes={state.wrongCellIndexes}
+          />
           <p className="wrong-feedback" aria-live="polite">
             {state.wrongCellIndexes.length > 0
               ? `${state.wrongCellIndexes.length} unique miss${state.wrongCellIndexes.length === 1 ? "" : "es"} — keep scanning`
@@ -496,7 +384,12 @@ export function GameShell({
                 <p className="score-pill">+{state.outcome.score} points</p>
               </div>
               <div className="result-board">
-                <PuzzleBoard state={state} onCell={() => undefined} />
+                <PuzzleBoard
+                  interactive={false}
+                  puzzle={selectCurrentPuzzle(state)}
+                  revealTarget
+                  wrongCellIndexes={state.outcome.wrongCellIndexes}
+                />
               </div>
             </div>
             <div className="game-actions result-actions">
@@ -536,10 +429,13 @@ export function GameShell({
             </div>
           ) : null}
           <div className="game-actions game-actions--summary">
-            <button className="button button--signal" onClick={() => void handleShare(prepared, score)} type="button">
+            <Link className="button button--signal" href="/focus">
+              Go deeper in Focus Run
+            </Link>
+            <button className="button button--secondary" onClick={() => void handleShare(prepared, score)} type="button">
               Challenge a friend
             </button>
-            <button className="button button--secondary" onClick={() => resetToSetup("quick")} type="button">
+            <button className="button button--ghost" onClick={() => resetToSetup("quick")} type="button">
               New quick scan
             </button>
             <button className="button button--ghost" onClick={() => resetToSetup("daily")} type="button">

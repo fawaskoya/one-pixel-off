@@ -3,6 +3,7 @@ import { absoluteUrl } from "@/lib/site";
 
 const indexableRoutes = [
   "",
+  "/focus",
   "/play",
   "/how-to-play",
   "/categories",

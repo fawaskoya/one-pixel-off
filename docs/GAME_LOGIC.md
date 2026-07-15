@@ -1,8 +1,8 @@
 # Game logic specification
 
-This document describes the implemented generation-version-1/state-version-1 behavior under `src/domain/pixel/**`. Roadmap items are isolated at the end.
+This document describes the implemented Classic Five contract under `src/domain/pixel/**`, the additive Focus Run contract under `src/domain/focus-run/**`, and their local aggregate adapters. Both domains are versioned independently. Roadmap items are isolated at the end.
 
-## 1. Fixed constants
+## 1. Classic Five fixed constants
 
 ```ts
 PIXEL_SCHEMA_VERSION = 1
@@ -384,12 +384,39 @@ Validated shape:
 
 Stored Daily strings are regex-checked, not full calendar-validated. Dates are deduplicated and sliced to the latest 400 array entries. Invalid/corrupt/inaccessible storage loads as empty stats. A failed/invalid write returns `false`. There is no preferences/history/first-attempt/active-session data.
 
+Focus progression uses a separate key: `one-pixel-off:focus-progress:v1`.
+
+```ts
+{
+  schemaVersion: 1,
+  focusRunsCompleted: safeAggregate,
+  totalFinds: safeAggregate,
+  bestScore: safeAggregate,
+  highestBoard: safeAggregate,
+  bestFindStreak: safeAggregate,
+  bestCleanStreak: safeAggregate,
+  findsByFamily: {
+    rings, stripes, arrows, corners, dots, diamonds, chevrons, orbit
+  }
+}
+```
+
+`normalizeFocusProgress` requires schema version 1, emits only the allowlisted shape, normalizes invalid counters to zero, saturates at `Number.MAX_SAFE_INTEGER`, ignores unknown fields/families, derives `totalFinds` from the eight family counters, and clamps best streaks to consistent totals. `mergeFocusRun` is pure and rejects unsafe/inconsistent run records; `recordFocusRun` reads, merges, and writes inside a storage/JSON `try/catch`. No seeds, board descriptors, outcomes, active-run snapshots, Daily cells, or achievement flags are persisted.
+
+Daily activity is derived from Classic `dailyDatesCompleted`. `deriveDailyActivity(values,today?)` validates real UTC `YYYY-MM-DD` dates, deduplicates them, discards future values, and returns:
+
+- current streak, anchored to today when complete or yesterday while today remains open;
+- longest historical consecutive-day streak through today;
+- completed count in the inclusive today-minus-six through today window;
+- seven chronological cells with date/completed/isToday.
+
+An omitted or invalid `today` input uses the current UTC date. This is local activity, not a server-authoritative first-attempt record.
+
 ## 14. UI interaction baseline
 
-- Cells are native buttons with labels `Tile <row>, <column>`.
-- Every cell is in normal tab order during play; Enter/Space trigger native click.
-- Arrow-key/roving-grid navigation is not implemented.
-- During result, all cells are disabled; target gets `data-target`, wrong cells retain `data-wrong`.
+- Cells are native buttons labelled `Tile <row>, <column>`; resolved labels append `wrong choice` or `target anomaly` as applicable.
+- One playable cell is in the tab order at a time. Arrow keys move in the grid, Home/End move to row bounds, and Enter/Space trigger native click.
+- During result, all cells are disabled; target gets `data-target`, wrong cells retain `data-wrong`, and accessible names expose those states.
 - The playing timer ticks every 100 ms in GameShell and displays tenths.
 - Wrong count is announced in a polite live region.
 - Round result text names the mutation kind, not the exact scalar/primitive.
@@ -422,14 +449,198 @@ Stored Daily strings are regex-checked, not full calendar-validated. Dates are d
 | Offline navigation | `/offline` fallback; no guarantee of play shell |
 | Keyboard baseline | Tab plus Enter/Space; arrow keys currently absent |
 
-## 16. Roadmap, not current behavior
+## 16. Focus Run fixed constants
 
-- Roving grid focus/arrow keys and richer live-region strategy.
+```ts
+FOCUS_RUN_SCHEMA_VERSION = 1
+FOCUS_RUN_GENERATION_VERSION = 1
+FOCUS_RUN_RULES_VERSION = 1
+FOCUS_RUN_STATE_VERSION = 1
+FOCUS_RUN_STARTING_CHARGES = 3
+FOCUS_RUN_MAX_CHARGES = 3
+FOCUS_RUN_STREAK_RESTORE_INTERVAL = 5
+FOCUS_RUN_CHECKPOINT_INTERVAL = 5
+FOCUS_RUN_RECOVERY_BONUS_MS = 2_000
+FOCUS_RUN_RECENT_OUTCOME_LIMIT = 5
+FOCUS_RUN_MIN_BOARD_NUMBER = 1
+FOCUS_RUN_MAX_BOARD_NUMBER = 1_000_000
+```
+
+Focus Run is additive. `PixelSessionMode`, `PuzzleTuple`, Classic score caps, `opo1` tokens, and the five-round Daily/Challenge contracts remain unchanged.
+
+Core Focus variants and finish reasons:
+
+```ts
+type FocusRunVariant = "focus" | "weekly";
+type FocusRunFinishReason =
+  | "charges_exhausted"
+  | "player_finished"
+  | "weekly_completed"
+  | "board_limit_reached";
+```
+
+Prepared Focus runs carry independent schema, generation, rules, and state contracts. Normal Focus has a defensive maximum of board 1,000,000. Weekly has `maxBoards = 15`.
+
+## 17. Focus numbered-board generation
+
+`generateFocusRunBoard` validates a safe integer board number and creates exactly one `FocusRunBoard` containing its number, difficulty, base/recovery/total durations, and one normal `PixelPuzzleDescriptor`.
+
+Difficulty and base-time schedule:
+
+| Boards | Difficulty sequence | Base duration |
+|---|---|---:|
+| 1–5 | beginner, steady, tricky, tricky, expert | 15,000 ms |
+| 6–10 | steady, tricky, tricky, expert, expert | 14,000 ms |
+| 11–15 | tricky, tricky, expert, expert, expert | 13,000 ms |
+| 16…1,000,000 | expert | 12,000 ms |
+
+Focus does not create smaller-than-expert anomalies, grids beyond 6×6, or compound mutations. It reuses the Classic mutation-aware magnitude bands in section 6. Difficulty beyond board 16 comes from maintaining expert density under the 12-second base timer, not from hiding a sub-perceptual change.
+
+Pinned Focus labels:
+
+- eight-family block shuffle: `${seed}|focus-g1|family-block:<block>`;
+- per-board schedule/palette: `${seed}|focus-g1|b<boardNumber>|schedule`;
+- derived puzzle seed: `${seed}|focus-g1|b<boardNumber>`.
+
+The family deck visits every family once per complete eight-board block. Palette is chosen from the normal six-palette catalog. The derived puzzle calls `generatePixelPuzzle` with `roundIndex = (boardNumber - 1) % 5`; the derived seed keeps numbered boards distinct even when that index repeats.
+
+`createFocusRunState` generates only board 1. Each later board is generated when the reducer enters its `ready` phase. State stores aggregate counters plus at most the five most recent outcomes, not an ever-growing array of boards or results.
+
+## 18. Focus charges, streaks, recovery, and checkpoints
+
+### Correct find
+
+- increments boards played, finds, current find streak, and the selected family counter;
+- increments clean streak only when the board has zero unique wrong taps; otherwise clean streak becomes zero;
+- updates both best streaks;
+- adds the normal found score;
+- at find streak 5, 10, 15, and later multiples of five, restores one charge only when fewer than three remain.
+
+### Wrong tap
+
+- reconciles the absolute clock before the cell is evaluated;
+- records a valid new wrong index once;
+- immediately breaks the active clean streak;
+- does not reset the find streak, consume a charge, or directly remove time;
+- repeated wrong taps are no-ops after clock reconciliation.
+
+### Timeout
+
+- resolves before a tap when `nowMs >= deadlineMs`;
+- scores zero, consumes exactly one charge, and resets both active streaks;
+- preserves unique wrong indexes and reveals the target in the result state;
+- grants exactly `+2,000 ms` to the next generated board, including when a checkpoint occurs between the timeout and that board;
+- does not reduce the next board’s difficulty or alter its mutation magnitude.
+
+The recovery flag exists on one board only. A subsequent board has no recovery bonus unless the recovery board itself times out.
+
+### Checkpoints and termination
+
+After `ADVANCE_AFTER_RESULT`, terminal conditions are evaluated before checkpoint creation:
+
+1. Weekly board 15 creates `weekly_completed`; normal board 1,000,000 creates `board_limit_reached`.
+2. Zero charges creates `charges_exhausted`.
+3. Otherwise every boards-played multiple of five creates `checkpoint`.
+4. Any other result advances to the next lazy `ready` board.
+
+Only checkpoints accept `CONTINUE_RUN` or `FINISH_RUN`. Continue creates the next ready board without starting its timer. Finish creates `player_finished`; already earned aggregate progress is not discarded. Weekly may also be deliberately finished at its board-5 or board-10 checkpoint.
+
+Focus charges are not a currency. There is no purchase, rewarded-ad revive, random chest, or remote entitlement path.
+
+## 19. Focus state machine and guards
+
+```ts
+type FocusRunState =
+  | { phase: "ready"; board; progress; phaseToken; ... }
+  | { phase: "playing"; board; progress; phaseToken;
+      startedAtMs; deadlineMs; wrongCellIndexes; ... }
+  | { phase: "round_result"; board; progress; phaseToken; outcome; ... }
+  | { phase: "checkpoint"; progress; checkpointNumber; phaseToken; ... }
+  | { phase: "run_result"; progress; completedAtMs; finishReason; ... };
+```
+
+`START_BOARD`, `TAP_CELL`, `CLOCK_TICK`, `ADVANCE_AFTER_RESULT`, `CONTINUE_RUN`, and `FINISH_RUN` are guarded by run ID, logical board number, and phase token. Nonfinite/backward clocks, stale guards, wrong-phase actions, and invalid cells are handled with the same no-op/monotonic principles as Classic.
+
+The playing deadline is `startedAtMs + board.durationMs`, where duration is base time plus optional recovery. Timeout outcome `endedAtMs` is the logical deadline even if a throttled tab resumes later.
+
+`FocusRunAggregates` contains:
+
+```ts
+{
+  boardsPlayed, finds, timeouts,
+  findStreak, bestFindStreak,
+  cleanStreak, bestCleanStreak,
+  charges, score,
+  familyFinds: Record<GlyphFamilyId, number>
+}
+```
+
+State invariants prove version/envelope correctness, aggregate arithmetic, exact family keys and totals, last-five sequence, board policy, deadline math, outcome scoring, checkpoint multiples, terminal reasons, and nested pixel-puzzle invariants.
+
+## 20. Focus scoring
+
+Focus found boards call the same `scoreFoundRound(remainingMs,uniqueWrongCount)` as Classic. There is no streak multiplier or charge bonus:
+
+```ts
+boardScore = clamp(
+  100 + floor(clamp(remainingMs, 0, 15000) / 100)
+      - 20 * uniqueWrongCount,
+  25,
+  250
+)
+```
+
+Recovery can increase available board time but never pushes a board above the 250-point per-board cap because the score function clamps remaining time to 15 seconds. Run score is a safe-integer-saturated sum of found outcomes; timeouts remain zero. It is local entertainment data, not authenticated competition.
+
+## 21. Weekly Focus
+
+`focusRunIsoWeekKeyFromEpochMs` calculates a UTC ISO week key in `YYYY-Www`. `focusRunWeeklySeedAt(epochMs)` returns:
+
+`opo|focus-weekly|g1|YYYY-Www`
+
+The helper rejects nonfinite timestamps. `createFocusRunState(seed,...,{variant:"weekly"})` accepts any otherwise valid seed; callers that promise the shared Weekly set must use the Weekly helper. Weekly uses the normal numbered-board generator and charge/streak/recovery rules, stops automatically after the fifteenth outcome, and can end earlier by charge exhaustion or an explicit checkpoint finish. There is no server-authoritative first attempt or leaderboard.
+
+## 22. Derived retention and sharing
+
+Achievements are derived from normalized Focus aggregates:
+
+- Clean Five: best clean streak at least 5;
+- Every Angle: at least one find in each of all eight families;
+- Deep Focus: highest board at least 20;
+- family milestones: 5, 25, and 100 cumulative finds for each family.
+
+The UI may show locked progress, but no unlock flag is written to storage. Daily current/longest streak and seven-day cells are likewise derived from Classic completion dates as described in section 13.
+
+Classic Challenge remains the checksummed exact replay token. Focus Run shares the exact numbered-board sequence through `/focus?g=1&r=1&seed=<URL-encoded normalized seed>` and adds `mode=weekly` for Weekly. `shareFocusRun` formats the local result summary and applies native-share → clipboard → manual-copy fallback. The seed reproduces board descriptors, not the sender’s result, and carries no score or identity.
+
+The Focus query uses the normal NFC/safe-alphabet/96-character seed validation and explicit generation/rules version fields. Missing version fields are treated as version 1 for current-link compatibility; unsupported fields reject the replay rather than silently running a different engine. The query still has no checksum or authentication. A future hardened Focus token must use a new contract rather than silently repurposing `opo1`.
+
+## 23. Focus verification matrix
+
+Implemented deterministic coverage includes:
+
+- same seed/board equality and different seed/board divergence;
+- all four Focus difficulty sectors and 15/14/13/12-second timing;
+- one-board recovery policy and invalid board/recovery bounds;
+- three starting charges, timeout loss, five-find restoration, and three-charge cap;
+- find/clean streak increments and wrong-tap clean break;
+- charge exhaustion, explicit checkpoint finish, and board-15 Weekly completion;
+- guarded/stale/duplicate actions, exact deadline, selectors, nested invariants, and bounded recent outcomes;
+- UTC ISO week boundaries;
+- aggregate normalization/merge/saturation/storage failure;
+- derived achievements and UTC Daily activity through duplicates, gaps, future/invalid dates, month/year boundaries, and leap day.
+
+Required browser verification additionally covers explicit board starts, Focus HUD announcements, target reveal, recovery copy, board-5 checkpoint continue/finish, run summary/personal records, Weekly selection/completion, exact `/focus?g=1&r=1&seed=…` replay, unsupported-version rejection, narrow-screen layout, and unavailable local storage/share behavior.
+
+## 24. Roadmap, not current behavior
+
+- Richer bounded timer/live-region strategy and manual assistive-technology calibration.
 - Explicit persistence byte ceilings/migrations/clear controls.
-- Canonical first-attempt Daily results or streaks.
+- Canonical server-authoritative first-attempt Daily/Weekly results.
 - Guaranteed cached offline gameplay and phase-aware SW updates.
 - Generator retry/fallback/perceptual rejection pipeline.
 - Separate scoring/rules version if compatibility requires it.
 - Server-authoritative competition.
+- An optional checksummed Focus token to harden the implemented versioned normalized raw-seed query.
 
 Do not write tests or docs that assume these exist before implementation.

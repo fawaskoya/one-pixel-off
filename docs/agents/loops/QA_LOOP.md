@@ -93,7 +93,7 @@ Do not patch the UI to hide a lower-layer defect.
 ### UI/accessibility baseline
 
 - Native buttons work with Tab/Enter/Space.
-- Arrow navigation is currently absent; log as roadmap unless task implements it.
+- Arrow/Home/End navigation and the single roving Tab stop are implemented; verify them on every supported grid size.
 - Test 4×4, 5×5, 6×6; ≤380 px fluid target sizing; short landscape/desktop.
 - Reduced motion CSS applies.
 - Forced colors base styling applies; inspect wrong/target distinction as known gap.

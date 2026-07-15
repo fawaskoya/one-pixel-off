@@ -138,11 +138,11 @@ The board is square and uses `repeat(gridSize, 1fr)` for `gridSize` 4, 5, or 6. 
 Current cell behavior:
 
 - native `<button>`;
-- label `Tile <row>, <column>`;
+- label `Tile <row>, <column>`, with resolved `wrong choice` or `target anomaly` state appended when applicable;
 - SVG is `aria-hidden` and `focusable=false`;
-- normal browser Tab order includes every enabled cell;
+- one enabled cell is in the Tab order at a time;
+- Arrow keys move between cells and Home/End move to row bounds;
 - Enter/Space use native button click;
-- no arrow-key/roving focus behavior;
 - hover mixes the background with signal;
 - wrong cell adds a 2 px coral inset border through `::after`;
 - target marker does not exist until `round_result` and adds a 3 px signal-deep inset border;
@@ -241,13 +241,14 @@ It does not currently add explicit forced-color differentiation for `data-wrong`
 - Semantic buttons, radio inputs, fieldset/legend, headings, links.
 - Named pattern group and row/column cell labels.
 - Native keyboard activation.
+- Roving board tab stop with Arrow/Home/End grid navigation.
+- Resolved wrong/target state in accessible cell names.
 - Polite wrong-count feedback and result/share status/alerts.
 - Reduced-motion and basic forced-colors CSS.
 - SVGs hidden from the accessibility tree so target metadata is not announced.
 
 ### Roadmap / not implemented
 
-- Roving tab stop and arrow-grid navigation.
 - Redundant non-color wrong/target markers verified in forced colors.
 - Rich target explanation tied to focus/announcement.
 - Bounded start/five-second/timeout announcements.

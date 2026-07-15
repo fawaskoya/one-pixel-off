@@ -15,7 +15,7 @@ Read the design system, current GameShell/CSS, domain state, and tests. Inspect 
 
 - Setup is component state; reducer phases are ready, playing, round_result, session_result.
 - Boards are square 4×4, 5×5, or 6×6.
-- Native cell buttons support Tab/Enter/Space; no arrow-key roving focus.
+- Native cell buttons use one roving Tab stop, Arrow/Home/End navigation, and Enter/Space activation.
 - Cells scale from the square board without an intrinsic minimum; measure narrow/short viewport targets and containment together.
 - Wrong uses coral inset border; revealed target uses signal-deep inset border.
 - Forced-colors CSS is basic and does not explicitly differentiate those pseudo-elements.

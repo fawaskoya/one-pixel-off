@@ -47,15 +47,15 @@ export default function Home() {
           <p className="eyebrow"><span className="status-dot" /> Visual inspection test 001</p>
           <h1 id="hero-title">One detail is wrong. <em>How fast can you see it?</em></h1>
           <p className="hero__lede">
-            Scan a code-generated pattern, find the single anomaly, and tap it
-            before fifteen seconds disappear.
+            Scan code-generated patterns, find each single anomaly, and keep
+            your focus alive as the timer tightens.
           </p>
           <div className="button-row">
-            <Link className="button button--primary button--large" href="/play">
-              Start the scan <span aria-hidden="true">→</span>
+            <Link className="button button--primary button--large" href="/focus">
+              Start Focus Run <span aria-hidden="true">→</span>
             </Link>
-            <Link className="button button--secondary button--large" href="/how-to-play">
-              How it works
+            <Link className="button button--secondary button--large" href="/play">
+              Play five boards
             </Link>
           </div>
           <ul className="trust-row" aria-label="Game benefits">
@@ -76,10 +76,10 @@ export default function Home() {
 
       <section className="metric-strip" aria-label="Game facts">
         <div className="shell metric-strip__grid">
-          <p><strong>05</strong><span>rounds per run</span></p>
-          <p><strong>15s</strong><span>to inspect</span></p>
+          <p><strong>03</strong><span>focus charges</span></p>
+          <p><strong>05</strong><span>boards per checkpoint</span></p>
+          <p><strong>12s</strong><span>minimum timer</span></p>
           <p><strong>∞</strong><span>deterministic boards</span></p>
-          <p><strong>₹0</strong><span>generation cost</span></p>
         </div>
       </section>
 
@@ -159,7 +159,7 @@ export default function Home() {
         <div className="target-lock" aria-hidden="true"><i /></div>
         <h2 id="cta-title">Your eyes are already searching.</h2>
         <p>Give them something worth finding.</p>
-        <Link className="button button--signal button--large" href="/play">Begin five rounds <span aria-hidden="true">→</span></Link>
+        <Link className="button button--signal button--large" href="/focus">Begin a Focus Run <span aria-hidden="true">→</span></Link>
       </section>
     </>
   );
