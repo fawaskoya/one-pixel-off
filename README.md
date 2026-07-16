@@ -32,9 +32,11 @@ The normative generator, reducer, timing, and token rules are in [docs/GAME_LOGI
 - Vitest 4
 - pnpm 10 and Node.js 20.9+
 
-## Run locally
+## Clone and run locally
 
 ```bash
+git clone https://github.com/fawaskoya/one-pixel-off.git one-pixel-off
+cd one-pixel-off
 pnpm install
 pnpm dev
 ```
