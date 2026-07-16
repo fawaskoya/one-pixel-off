@@ -50,10 +50,10 @@ Timeout is `0`; maximum Classic session score is `1,250`. Focus reuses the same 
 ### Modes
 
 - **Classic Five / Quick:** generated on `/play` from a fresh seed containing wall time and locally generated entropy.
-- **Daily:** selected on `/play` or `/play?mode=daily`; seed is `opo|daily|g1|YYYY-MM-DD` in UTC.
+- **Daily:** selected on `/play` or `/play?mode=daily`; seed is `opo|daily|g2|YYYY-MM-DD` in UTC.
 - **Challenge:** token is decoded by `/challenge/[token]`; accepted session uses the decoded seed in challenge mode.
-- **Focus:** `/focus` creates a fresh run seed and produces numbered boards on demand; `?g=1&r=1&seed=<normalized seed>` pins the engine contracts and replays the same sequence.
-- **Weekly Focus:** `/focus?mode=weekly` derives `opo|focus-weekly|g1|<ISO week key>` for the deterministic 15-board weekly set. Shared URLs include mode, generation/rules versions, and seed.
+- **Focus:** `/focus` creates a fresh run seed and produces numbered boards on demand; `?g=2&r=1&seed=<normalized seed>` pins the engine contracts and replays the same sequence.
+- **Weekly Focus:** `/focus?mode=weekly` derives `opo|focus-weekly|g2|<ISO week key>` for the deterministic 15-board weekly set. Shared URLs include mode, generation/rules versions, and seed.
 
 ### Local persistence
 
@@ -115,7 +115,7 @@ Magnitude bands are mutation-aware because geometry coordinates, non-scaling str
 | beginner | 4 | 8, 10, 12 | 3, 4 | 10°, 12° |
 | steady | 4, 5 | 6, 7, 8 | 2, 3 | 8°, 9° |
 | tricky | 5 | 5, 6 | 2, 3 | 7°, 8° |
-| expert | 6 | 4, 5 | 1, 2 | 6°, 7° |
+| expert | 6 | 5, 6 | 2 | 7°, 8° |
 
 Family recipes define allowed scalar candidates with bounds. The selected mutation kind is one of `offset`, `size`, `spacing`, `stroke`, or `rotation`. Every descriptor uses integer geometry in a `0 0 100 100` view box and allowlisted circle/rect/line/polygon primitives.
 
@@ -129,13 +129,11 @@ Family recipes define allowed scalar candidates with bounds. The selected mutati
 - `/how-to-play` — rules and scoring explanation.
 - `/categories` — implemented vector-family catalog (“Pattern Lab”).
 - `/about` — technical/product background.
-- `/privacy` — launch-stage privacy template.
-- `/terms` — launch-stage terms template.
-- `/contact` — contact route/template.
 
 ### Non-indexed/support routes
 
-- `/challenge/[token]` — dynamic challenge, `noindex`, disallowed in robots.
+- `/privacy`, `/terms`, `/contact` — reachable operator-review templates, temporarily `noindex, follow` and excluded from the sitemap until real operator/contact details are supplied.
+- `/challenge/[token]` — dynamic challenge, `noindex, follow`; robots permits crawling so the directive can be read.
 - `/offline` — navigation fallback, `noindex`.
 - `/ads.txt` — environment-gated publisher record.
 - Generated metadata routes: manifest, sitemap, robots, Open Graph image, icon.
@@ -163,7 +161,7 @@ Every fifth resolved board transitions from `round_result` to `checkpoint`; `CON
 ### Goals for the implemented baseline
 
 - Immediate locally generated visual play.
-- Exact Classic-session and Focus numbered-board reproduction within their generation-version-1 contracts.
+- Exact Classic-session and Focus numbered-board reproduction within their generation-version-2 contracts.
 - Robust invariant checks and deterministic tests.
 - Quick, Daily, and Challenge paths without a backend.
 - A checkpointed Focus loop and deterministic 15-board Weekly rules without a backend.
@@ -266,7 +264,7 @@ Exit: keyboard, touch, zoom, reduced motion, forced colors, and screen-reader st
 ### Phase E — traffic experiments
 
 - Share deterministic challenge demonstrations.
-- Share exact Focus sequences through canonicalized `/focus?g=1&r=1&seed=…` links without implying that the seed authenticates the sender or score.
+- Share exact Focus sequences through canonicalized `/focus?g=2&r=1&seed=…` links without implying that the seed authenticates the sender or score.
 - Publish useful original procedural-puzzle and visual-inspection content.
 - Measure coarse landing/start/completion/share/error events only after privacy/consent review.
 - Avoid thin seed/date pages, IQ/medical claims, and guaranteed-traffic language.
@@ -328,7 +326,7 @@ Current local stats are not analytics and do not leave the browser through appli
 - Aggregate stats failure does not block results.
 - Focus state remains valid across find, wrong, timeout, recovery, checkpoint, finish, exhaustion, and Weekly board-15 completion.
 - Same Focus seed/version/board number reproduces the same board, without changing Classic challenge fixtures.
-- Shared `/focus?g=1&r=1&seed=…` links reproduce the sequence while carrying no score or identity claim.
+- Shared `/focus?g=2&r=1&seed=…` links reproduce the sequence while carrying no score or identity claim.
 - Progress normalization and Daily activity derivation tolerate corrupt input without blocking play.
 
 ### Experience

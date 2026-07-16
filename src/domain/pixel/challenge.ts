@@ -17,7 +17,7 @@ const BASE64URL_ALPHABET =
 
 export type DecodedPixelChallenge = Readonly<{
   seed: string;
-  generationVersion: 1;
+  generationVersion: 2;
   tokenId: string;
 }>;
 

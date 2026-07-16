@@ -1,7 +1,7 @@
 import type { DifficultyTier, RoundIndex } from "./types";
 
 export const PIXEL_SCHEMA_VERSION = 1 as const;
-export const PIXEL_GENERATION_VERSION = 1 as const;
+export const PIXEL_GENERATION_VERSION = 2 as const;
 export const PIXEL_STATE_VERSION = 1 as const;
 export const PIXEL_SESSION_ROUNDS = 5 as const;
 export const PIXEL_ROUND_DURATION_MS = 15_000 as const;

@@ -21,6 +21,8 @@ All notable pre-release changes to One Pixel Off are recorded here.
 - Added native sharing, clipboard fallback, and manual-copy recovery.
 - Added a dark inspection-lab brand system, home experience, Pattern Lab, how-to, about, privacy, terms, contact, offline, 404, route-error, and global-recovery surfaces.
 - Added metadata, Open Graph artwork, sitemap, robots, manifest, app icon, production-only offline fallback, conditional `ads.txt`, and a disabled-by-default ad boundary.
+- Added route-specific canonical, Open Graph, and Twitter metadata; homepage `WebSite` structured data; visible content-page breadcrumbs with matching structured data; and substantive search-intent context around Classic Five and Focus Run.
+- Added a complete mobile navigation menu, safe-area-aware shared layouts, installable 192/512 px icons, an Apple touch icon, and rotation-friendly PWA behavior.
 - Added the master plan, architecture, exact game-logic specification, design system, decisions, marketing/AdSense strategy, launch checklist, detailed delegation prompts, master build prompt, and five repeatable agent loops.
 - Added deterministic Vitest coverage for Classic and Focus generation, invariants, seeded reproducibility, perceptual mutation floors, scoring boundaries, Daily/Weekly behavior, challenge corruption, clock authority, guarded transitions, checkpoints, recovery, streaks, selectors, progression, and storage degradation.
 
@@ -33,6 +35,10 @@ All notable pre-release changes to One Pixel Off are recorded here.
 - Kept Classic Five, Daily, and Challenge fixed at five boards while adding Focus Run as a separate rules/state contract rather than changing public `opo1` challenge semantics.
 - Standardized monetization language around content-first approval and a strict no-ads-during-play boundary.
 - Recalibrated the pre-launch difficulty curve with separate geometry, non-scaling stroke, and rotation bands so dense rounds remain hard without relying on effectively invisible mutations.
+- Raised only the Expert visibility floor from 4–5 to 5–6 geometry units, from 1–2 to 2 stroke units, and from 6–7° to 7–8° rotation. Expert remains a 6×6 board with unchanged Focus timers, while pixel and Focus generation advance to version 2 so old share contracts are never silently reinterpreted.
+- Added environment-gated Search Console and AdSense ownership metadata. Verification remains network-free: a valid publisher ID also powers `/ads.txt`, while live ad requests stay disabled behind the separate approval and consent gate.
+- Allowed crawlers to read challenge responses so their `noindex, follow` metadata can be honored; challenge URLs remain excluded from the sitemap and use their own share URL instead of inheriting the homepage canonical.
+- Temporarily removed the draft privacy, terms, and unconfigured contact pages from the sitemap and marked them `noindex, follow` until real operator and mailbox details are supplied.
 
 ### Removed
 
@@ -46,11 +52,15 @@ All notable pre-release changes to One Pixel Off are recorded here.
 - Enlarged the active and mobile review boards with explicit viewport-reserve budgets, compacted the play HUD/timer chrome, added safe-area-aware phone gutters, preserved roughly 46 px 6×6 cells at 320 px width, and added touch-specific pressed feedback without sticky hover styling.
 - Prevented the landing hero from falling below shorter desktop viewports by budgeting against the real header height, scaling the headline by both width and height, compacting vertical rhythm, and reserving layout space for the rotated demo card and its hard shadow.
 - Removed sub-pixel expert geometry and 1–2° rotation anomalies, and added a mutation-magnitude invariant plus an all-family deterministic visibility corpus to keep future tuning inside the hard-but-fair policy.
+- Prevented late Expert boards from selecting anomalies that can collapse to an effectively invisible one-pixel stroke or roughly two-pixel geometry difference on dense mobile grids.
+- Prevented the tablet footer and narrow navigation from clipping links, enlarged mobile answer-review boards, compacted the Focus HUD so 320 px play boards retain practical tap targets, and raised essential microcopy to a readable floor.
+- Added modality-aware keyboard focus handoff for timed boards and their next actions, plus an inset puzzle-cell focus treatment that remains visible at board edges and in forced-colors mode.
+- Surfaced Classic local-storage failures in the session summary instead of silently discarding aggregate progress.
 
 ### Verification
 
-- `pnpm check` passes repository-wide lint, TypeScript, and 95 deterministic tests across seven test files.
-- `pnpm build` passes with 20 generated App Router pages and a compiled dynamic `/focus` route.
+- `pnpm check` passes repository-wide lint, TypeScript, and 96 deterministic tests across seven test files.
+- `pnpm build` passes with 21 generated App Router pages, including production metadata/image routes and compiled dynamic `/focus`, `/play`, and challenge routes.
 - Live development-server checks returned HTTP 200 for `/`, `/focus`, `/focus?mode=weekly`, shared-seed Focus, `/play`, `/sitemap.xml`, and `/manifest.webmanifest` on port 3001; the server log showed no compilation or request errors.
 - Interactive in-app-browser discovery was unavailable in the verification session, so desktop/mobile visual, console, keyboard, zoom, and screen-reader checks remain manual launch gates rather than claimed passes.
 - The Open Graph image was previously rendered and visually inspected at 1200×630.

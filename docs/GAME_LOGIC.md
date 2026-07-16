@@ -6,7 +6,7 @@ This document describes the implemented Classic Five contract under `src/domain/
 
 ```ts
 PIXEL_SCHEMA_VERSION = 1
-PIXEL_GENERATION_VERSION = 1
+PIXEL_GENERATION_VERSION = 2
 PIXEL_STATE_VERSION = 1
 PIXEL_SESSION_ROUNDS = 5
 PIXEL_ROUND_DURATION_MS = 15_000
@@ -71,12 +71,12 @@ first mulberry32 values:
 
 `minimum + floor(random() × (maximum - minimum + 1))`
 
-There is no rejection sampling in generation version 1.
+There is no rejection sampling in generation version 2.
 
 ### Random stream labels
 
-- Session catalog order: `${seed}|g1|session`.
-- Per-puzzle generation: `${seed}|g1|r${roundIndex}`.
+- Session catalog order: `${seed}|g2|session`.
+- Per-puzzle generation: `${seed}|g2|r${roundIndex}`.
 
 The session stream shuffles the eight-family catalog, then shuffles the six-palette catalog using the continued stream, and takes five from each. Per-round generation selects grid size, base recipe details, mutation candidate/magnitude/sign, and target index in its pinned call order.
 
@@ -84,7 +84,7 @@ The session stream shuffles the eight-family catalog, then shuffles the six-pale
 
 Daily date keys must be real UTC dates in `YYYY-MM-DD`. Daily seed is exactly:
 
-`opo|daily|g1|YYYY-MM-DD`
+`opo|daily|g2|YYYY-MM-DD`
 
 A Daily session rejects a seed that does not exactly match its supplied UTC date. Non-Daily modes reject a non-null Daily date.
 
@@ -175,12 +175,12 @@ stroke widths, and rotation degrees do not have equal visual weight:
 | beginner | 4 | 8, 10, 12 | 3, 4 | 10°, 12° |
 | steady | 4, 5 | 6, 7, 8 | 2, 3 | 8°, 9° |
 | tricky | 5 | 5, 6 | 2, 3 | 7°, 8° |
-| expert | 6 | 4, 5 | 1, 2 | 6°, 7° |
+| expert | 6 | 5, 6 | 2 | 7°, 8° |
 
-The dense 6×6 expert grid remains the hardest round. Its geometry and rotation
-floors prevent changes from collapsing below roughly one rendered pixel on a
-small phone, while stroke stays lower because the renderer uses non-scaling
-strokes and a one-unit weight change remains perceptible.
+The dense 6×6 expert grid remains the hardest round. Generation 2 raises its
+geometry, stroke, and rotation floors by one small step so a rendered mobile
+anomaly does not collapse into an effectively invisible one- or two-pixel change.
+Grid density and time pressure remain unchanged.
 
 Round schedule:
 
@@ -207,15 +207,15 @@ For each round:
 7. Apply that scalar change to produce the target glyph.
 8. Choose target index uniformly through the float/inclusive-integer helper.
 9. Create `gridSize²` row-major cells: target gets target glyph/mutation; every other cell gets source glyph/null.
-10. Return the descriptor with stable ID `opo-g1-r<round>-<stableSeedHash(seed|round)>`.
+10. Return the descriptor with stable ID `opo-g2-r<round>-<stableSeedHash(seed|round)>`.
 
-There is no candidate retry, rejection loop, or fallback puzzle in generation version 1.
+There is no candidate retry, rejection loop, or fallback puzzle in generation version 2.
 
 ## 8. Puzzle invariants
 
 `pixelPuzzleInvariantViolations` checks:
 
-- schema/generation version 1;
+- schema version 1 and generation version 2;
 - round index 0…4;
 - allowlisted difficulty, grid `{4,5,6}`, family, and palette;
 - mutation magnitude allowed by its difficulty and mutation-kind band;
@@ -235,7 +235,7 @@ Session invariants additionally check five rounds, matching difficulty sequence,
 
 `generatePixelSession` validates mode/seed/date, shuffles catalogs, and creates exactly five rounds synchronously. It returns either a `PreparedPixelSession` or a typed error. Session ID is:
 
-`opo-<mode>-g1-<stableSeedHash(seed)>`
+`opo-<mode>-g2-<stableSeedHash(seed)>`
 
 Quick and Challenge with the same seed generate equal round descriptors but different session IDs because mode is part of the session ID.
 
@@ -359,7 +359,7 @@ Decoder order:
 6. Reject more than 192 decoded bytes.
 7. Decode fatal UTF-8 and parse JSON.
 8. Require plain record and exactly keys `g,s,v`.
-9. Require `v=1`, `g=1`, and canonical safe seed of maximum 96 chars.
+9. Require `v=1`, `g=2`, and canonical safe seed of maximum 96 chars.
 
 The route is `/challenge/[token]`, not a query parameter. The token contains no score, duration, target, cell data, player identity, or secret.
 
@@ -439,7 +439,7 @@ An omitted or invalid `today` input uses the current UTC date. This is local act
 | Story | Expected |
 |---|---|
 | Quick | five rounds, local generated boards, result/share |
-| Daily | same UTC seed/boards within generation v1 |
+| Daily | same UTC seed/boards within generation v2 |
 | Challenge | `/challenge/[token]` reproduces seed boards |
 | Wrong repeat | one penalty/index only |
 | Exact deadline | timeout, never found |
@@ -453,7 +453,7 @@ An omitted or invalid `today` input uses the current UTC date. This is local act
 
 ```ts
 FOCUS_RUN_SCHEMA_VERSION = 1
-FOCUS_RUN_GENERATION_VERSION = 1
+FOCUS_RUN_GENERATION_VERSION = 2
 FOCUS_RUN_RULES_VERSION = 1
 FOCUS_RUN_STATE_VERSION = 1
 FOCUS_RUN_STARTING_CHARGES = 3
@@ -498,9 +498,9 @@ Focus does not create smaller-than-expert anomalies, grids beyond 6×6, or compo
 
 Pinned Focus labels:
 
-- eight-family block shuffle: `${seed}|focus-g1|family-block:<block>`;
-- per-board schedule/palette: `${seed}|focus-g1|b<boardNumber>|schedule`;
-- derived puzzle seed: `${seed}|focus-g1|b<boardNumber>`.
+- eight-family block shuffle: `${seed}|focus-g2|family-block:<block>`;
+- per-board schedule/palette: `${seed}|focus-g2|b<boardNumber>|schedule`;
+- derived puzzle seed: `${seed}|focus-g2|b<boardNumber>`.
 
 The family deck visits every family once per complete eight-board block. Palette is chosen from the normal six-palette catalog. The derived puzzle calls `generatePixelPuzzle` with `roundIndex = (boardNumber - 1) % 5`; the derived seed keeps numbered boards distinct even when that index repeats.
 
@@ -596,7 +596,7 @@ Recovery can increase available board time but never pushes a board above the 25
 
 `focusRunIsoWeekKeyFromEpochMs` calculates a UTC ISO week key in `YYYY-Www`. `focusRunWeeklySeedAt(epochMs)` returns:
 
-`opo|focus-weekly|g1|YYYY-Www`
+`opo|focus-weekly|g2|YYYY-Www`
 
 The helper rejects nonfinite timestamps. `createFocusRunState(seed,...,{variant:"weekly"})` accepts any otherwise valid seed; callers that promise the shared Weekly set must use the Weekly helper. Weekly uses the normal numbered-board generator and charge/streak/recovery rules, stops automatically after the fifteenth outcome, and can end earlier by charge exhaustion or an explicit checkpoint finish. There is no server-authoritative first attempt or leaderboard.
 
@@ -611,9 +611,9 @@ Achievements are derived from normalized Focus aggregates:
 
 The UI may show locked progress, but no unlock flag is written to storage. Daily current/longest streak and seven-day cells are likewise derived from Classic completion dates as described in section 13.
 
-Classic Challenge remains the checksummed exact replay token. Focus Run shares the exact numbered-board sequence through `/focus?g=1&r=1&seed=<URL-encoded normalized seed>` and adds `mode=weekly` for Weekly. `shareFocusRun` formats the local result summary and applies native-share → clipboard → manual-copy fallback. The seed reproduces board descriptors, not the sender’s result, and carries no score or identity.
+Classic Challenge remains the checksummed exact replay token. Focus Run shares the exact numbered-board sequence through `/focus?g=2&r=1&seed=<URL-encoded normalized seed>` and adds `mode=weekly` for Weekly. `shareFocusRun` formats the local result summary and applies native-share → clipboard → manual-copy fallback. The seed reproduces board descriptors, not the sender’s result, and carries no score or identity.
 
-The Focus query uses the normal NFC/safe-alphabet/96-character seed validation and explicit generation/rules version fields. Missing version fields are treated as version 1 for current-link compatibility; unsupported fields reject the replay rather than silently running a different engine. The query still has no checksum or authentication. A future hardened Focus token must use a new contract rather than silently repurposing `opo1`.
+The Focus query uses the normal NFC/safe-alphabet/96-character seed validation and explicit generation/rules version fields. Missing version fields are treated as legacy generation version 1 and therefore reject against the current generation-2 engine instead of silently changing a shared sequence. The query still has no checksum or authentication. A future hardened Focus token must use a new contract rather than silently repurposing `opo1`.
 
 ## 23. Focus verification matrix
 
@@ -630,7 +630,7 @@ Implemented deterministic coverage includes:
 - aggregate normalization/merge/saturation/storage failure;
 - derived achievements and UTC Daily activity through duplicates, gaps, future/invalid dates, month/year boundaries, and leap day.
 
-Required browser verification additionally covers explicit board starts, Focus HUD announcements, target reveal, recovery copy, board-5 checkpoint continue/finish, run summary/personal records, Weekly selection/completion, exact `/focus?g=1&r=1&seed=…` replay, unsupported-version rejection, narrow-screen layout, and unavailable local storage/share behavior.
+Required browser verification additionally covers explicit board starts, Focus HUD announcements, target reveal, recovery copy, board-5 checkpoint continue/finish, run summary/personal records, Weekly selection/completion, exact `/focus?g=2&r=1&seed=…` replay, unsupported-version rejection, narrow-screen layout, and unavailable local storage/share behavior.
 
 ## 24. Roadmap, not current behavior
 

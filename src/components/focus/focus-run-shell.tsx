@@ -28,7 +28,10 @@ import {
 } from "@/lib/client/focus-progress";
 import { loadPixelStats } from "@/lib/client/pixel-storage";
 import { shareFocusRun, type ShareOutcome } from "@/lib/client/share";
-import { PuzzleBoard } from "@/components/game/puzzle-board";
+import {
+  PuzzleBoard,
+  useGameInputModality,
+} from "@/components/game/puzzle-board";
 import { FocusCheckpoint } from "./focus-checkpoint";
 import {
   FocusProgressPanel,
@@ -180,8 +183,12 @@ export function FocusRunShell({
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
   const [manualShareUrl, setManualShareUrl] = useState<string | null>(null);
   const [isSharing, setIsSharing] = useState(false);
+  const [focusBoardOnStart, setFocusBoardOnStart] = useState(false);
   const recordedCompletions = useRef(new Set<string>());
   const tokenSequence = useRef(0);
+  const screenRef = useRef<HTMLElement | null>(null);
+  const previousPhaseRef = useRef<string>("lobby");
+  const inputModality = useGameInputModality();
 
   const nextToken = (label: string) => {
     tokenSequence.current += 1;
@@ -254,6 +261,22 @@ export function FocusRunShell({
     state?.phase === "run_result" ? state.progress : null;
 
   useEffect(() => {
+    const phaseChanged = previousPhaseRef.current !== phase;
+    previousPhaseRef.current = phase;
+    if (!phaseChanged || phase === "playing" || inputModality.current !== "keyboard") {
+      return;
+    }
+
+    const animationFrame = window.requestAnimationFrame(() => {
+      const primaryAction =
+        screenRef.current?.querySelector<HTMLElement>(".button--signal:not(:disabled)") ??
+        screenRef.current?.querySelector<HTMLElement>("button:not(:disabled), a[href]");
+      primaryAction?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [inputModality, phase]);
+
+  useEffect(() => {
     if (
       phase !== "playing" ||
       !playingRunId ||
@@ -319,6 +342,7 @@ export function FocusRunShell({
 
   const startBoard = () => {
     if (state?.phase !== "ready") return;
+    setFocusBoardOnStart(inputModality.current === "keyboard");
     send({
       type: "START_BOARD",
       nowMs: Date.now(),
@@ -405,7 +429,7 @@ export function FocusRunShell({
     const mappedDailyActivity = dailyActivitySnapshot(dailyActivity);
     const mappedAchievements = achievementSnapshots(progress);
     return (
-      <section className="focus-page focus-page--lobby">
+      <section className="focus-page focus-page--lobby" ref={screenRef}>
         <div className="focus-shell">
           <div className="focus-lobby">
             <div className="focus-lobby__intro">
@@ -486,7 +510,7 @@ export function FocusRunShell({
 
   if (state.phase === "ready") {
     return (
-      <section className="focus-page focus-page--ready">
+      <section className="focus-page focus-page--ready" ref={screenRef}>
         <div className="focus-stage focus-stage--ready">
           <FocusRunHud
             boardNumber={state.board.boardNumber}
@@ -522,7 +546,7 @@ export function FocusRunShell({
   if (state.phase === "playing") {
     const remainingMs = selectFocusRunRemainingMs(state);
     return (
-      <section className="focus-page focus-page--playing">
+      <section className="focus-page focus-page--playing" ref={screenRef}>
         <div className="focus-stage">
           <FocusRunHud
             boardNumber={state.board.boardNumber}
@@ -537,6 +561,7 @@ export function FocusRunShell({
             urgent={remainingMs <= 4_000}
           />
           <PuzzleBoard
+            focusFirstCell={focusBoardOnStart}
             interactive
             onCell={tapCell}
             puzzle={state.board.puzzle}
@@ -557,7 +582,7 @@ export function FocusRunShell({
     const runEnds = aggregates.charges === 0;
     const runAtBoardLimit = aggregates.boardsPlayed >= prepared.maxBoards;
     return (
-      <section className="focus-page focus-page--result">
+      <section className="focus-page focus-page--result" ref={screenRef}>
         <div className="focus-stage focus-stage--result">
           <div className="focus-result-card" aria-live="polite">
             <div className="focus-result-card__copy">
@@ -608,7 +633,7 @@ export function FocusRunShell({
 
   if (state.phase === "checkpoint") {
     return (
-      <section className="focus-page focus-page--checkpoint">
+      <section className="focus-page focus-page--checkpoint" ref={screenRef}>
         <div className="focus-stage focus-stage--checkpoint">
           <FocusCheckpoint
             bestCleanStreak={aggregates.bestCleanStreak}
@@ -626,7 +651,7 @@ export function FocusRunShell({
 
   const personalRecords = progressSnapshot(progress);
   return (
-    <section className="focus-page focus-page--summary">
+    <section className="focus-page focus-page--summary" ref={screenRef}>
       <div className="focus-shell focus-shell--summary">
         <div>
           <FocusRunSummary

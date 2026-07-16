@@ -1,6 +1,13 @@
 "use client";
 
-import { memo, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
+import {
+  memo,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+} from "react";
 import {
   PIXEL_PALETTES,
   type ColorRole,
@@ -12,10 +19,45 @@ import {
 type PuzzleBoardProps = Readonly<{
   puzzle: PixelPuzzleDescriptor;
   interactive: boolean;
+  focusFirstCell?: boolean;
   wrongCellIndexes?: readonly number[];
   revealTarget?: boolean;
   onCell?: (index: number) => void;
 }>;
+
+export type GameInputModality = "keyboard" | "pointer";
+
+/**
+ * Tracks the latest intentional input without causing a render. A zero-detail
+ * click covers keyboard activation and most assistive-technology activation.
+ */
+export function useGameInputModality() {
+  const modality = useRef<GameInputModality>("pointer");
+
+  useEffect(() => {
+    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      modality.current = "keyboard";
+    };
+    const handlePointerDown = () => {
+      modality.current = "pointer";
+    };
+    const handleClick = (event: globalThis.MouseEvent) => {
+      if (event.detail === 0) modality.current = "keyboard";
+    };
+
+    window.addEventListener("keydown", handleKeyDown, true);
+    window.addEventListener("pointerdown", handlePointerDown, true);
+    window.addEventListener("click", handleClick, true);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown, true);
+      window.removeEventListener("pointerdown", handlePointerDown, true);
+      window.removeEventListener("click", handleClick, true);
+    };
+  }, []);
+
+  return modality;
+}
 
 function colorForRole(
   role: ColorRole,
@@ -87,6 +129,7 @@ const Glyph = memo(function Glyph({
 export function PuzzleBoard({
   puzzle,
   interactive,
+  focusFirstCell = false,
   wrongCellIndexes = [],
   revealTarget = false,
   onCell,
@@ -104,6 +147,14 @@ export function PuzzleBoard({
   const boardStyle = {
     "--puzzle-columns": puzzle.gridSize,
   } as CSSProperties;
+
+  useEffect(() => {
+    if (!interactive || !focusFirstCell) return;
+    const animationFrame = window.requestAnimationFrame(() => {
+      cellRefs.current[0]?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [focusFirstCell, interactive, puzzle.id]);
 
   const moveGridFocus = (
     event: KeyboardEvent<HTMLButtonElement>,

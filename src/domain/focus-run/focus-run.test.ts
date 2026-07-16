@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { GLYPH_FAMILIES } from "../pixel";
+import {
+  GLYPH_FAMILIES,
+  PIXEL_DIFFICULTY_CONFIG,
+  type MutationKind,
+} from "../pixel";
 import {
   FOCUS_RUN_MAX_BOARD_NUMBER,
   FOCUS_RUN_RECENT_OUTCOME_LIMIT,
@@ -157,6 +161,38 @@ describe("Focus Run deterministic board policy", () => {
       .toEqual(["tricky", "tricky", "expert", "expert", "expert"]);
     expect(focusRunDifficultyForBoard(16)).toBe("expert");
     expect(focusRunDifficultyForBoard(99_999)).toBe("expert");
+  });
+
+  it("keeps every dense Expert board above the generation-2 visibility floor", () => {
+    const floors = {
+      offset: 5,
+      size: 5,
+      spacing: 5,
+      stroke: 2,
+      rotation: 7,
+    } satisfies Readonly<Record<MutationKind, number>>;
+    const expertBoards = [5, 9, 10, 13, 14, 15, 16, 32] as const;
+
+    for (let seedIndex = 0; seedIndex < 50; seedIndex += 1) {
+      for (const boardNumber of expertBoards) {
+        const board = generateFocusRunBoard({
+          seed: `expert-visibility-${seedIndex}`,
+          boardNumber,
+        });
+        const magnitude = Math.abs(board.puzzle.mutation.delta);
+
+        expect(board.difficulty).toBe("expert");
+        expect(board.puzzle.gridSize).toBe(6);
+        expect(magnitude).toBeGreaterThanOrEqual(
+          floors[board.puzzle.mutation.kind],
+        );
+        expect(
+          PIXEL_DIFFICULTY_CONFIG.expert.magnitudes[
+            board.puzzle.mutation.kind
+          ],
+        ).toContain(magnitude);
+      }
+    }
   });
 
   it("uses 15/14/13/12-second sectors and a one-board recovery bonus", () => {
@@ -472,7 +508,7 @@ describe("versioned UTC weekly seed", () => {
     const monday = Date.UTC(2026, 6, 13);
     expect(focusRunWeeklySeedAt(monday)).toEqual({
       ok: true,
-      value: "opo|focus-weekly|g1|2026-W29",
+      value: "opo|focus-weekly|g2|2026-W29",
     });
     expect(focusRunWeeklySeedAt(monday + 6 * 86_400_000)).toEqual(
       focusRunWeeklySeedAt(monday),

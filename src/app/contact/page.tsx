@@ -1,13 +1,14 @@
-import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Callout, ContentPage, ContentSection } from "@/components/content";
+import { createPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: "Contact",
+export const metadata = createPageMetadata({
+  title: "Contact and Puzzle Support",
   description:
     "Contact One Pixel Off about a reproducible puzzle, accessibility, privacy, support, or launch feedback.",
-  alternates: { canonical: "/contact" },
-};
+  path: "/contact",
+  noIndex: true,
+});
 
 const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() || null;
 
@@ -23,6 +24,7 @@ function ContactLink({ subject, children }: { subject: string; children: ReactNo
 export default function ContactPage() {
   return (
     <ContentPage
+      path="/contact"
       eyebrow="Reports and support"
       title="Contact the pattern lab"
       description="A puzzle code, device, and short sequence of events are usually enough to reproduce a problem. Please leave other people’s personal information out of your message."

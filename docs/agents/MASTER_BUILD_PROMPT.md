@@ -16,7 +16,7 @@ Implementation/tests are authoritative for shipped behavior. Do not “fix” co
 
 - Five rounds; square grids only with `GridSize 4 | 5 | 6`.
 - Difficulty sequence: beginner, steady, tricky, tricky, expert.
-- Grid/magnitude choices: beginner grid 4, geometry 8|10|12, stroke 3|4, rotation 10|12; steady grid 4|5, geometry 6|7|8, stroke 2|3, rotation 8|9; tricky grid 5, geometry 5|6, stroke 2|3, rotation 7|8; expert grid 6, geometry 4|5, stroke 1|2, rotation 6|7.
+- Grid/magnitude choices: beginner grid 4, geometry 8|10|12, stroke 3|4, rotation 10|12; steady grid 4|5, geometry 6|7|8, stroke 2|3, rotation 8|9; tricky grid 5, geometry 5|6, stroke 2|3, rotation 7|8; expert grid 6, geometry 5|6, stroke 2, rotation 7|8.
 - Families: rings, stripes, arrows, corners, dots, diamonds, chevrons, orbit.
 - Six palettes exactly as listed in `catalog.ts`.
 - Exactly one target and one scalar mutation; all non-targets equal source glyph.
@@ -28,7 +28,7 @@ Implementation/tests are authoritative for shipped behavior. Do not “fix” co
 - New wrong index appends once; repeated wrong is a no-op apart from time advancement.
 - Found score: `clamp(100 + floor(remainingMs/100) - 20*uniqueWrong, 25, 250)`; timeout 0; session cap 1250.
 - Quick/Daily live on `/play`; Challenge is `/challenge/[token]`.
-- Token prefix `opo1`, max 256 chars, max 192 decoded bytes, max 96-char seed; payload exactly `{v:1,g:1,s}`.
+- Token prefix `opo1`, max 256 chars, max 192 decoded bytes, max 96-char seed; payload exactly `{v:1,g:2,s}`.
 - Storage only `one-pixel-off:stats:v1` aggregate stats; no preferences/history/active resume.
 - Offline support only navigation fallback with `/offline` and `/icon.svg` precached.
 - Home ad component is a disabled-by-default placeholder, not live AdSense.

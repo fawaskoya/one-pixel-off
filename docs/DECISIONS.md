@@ -8,7 +8,7 @@
 
 ## ADR-002 — Code-native vectors
 
-**Decision:** Generation version 1 emits integer-only circle/rect/line/polygon descriptors in a fixed 100-unit SVG view box.
+**Decision:** Generation version 2 emits integer-only circle/rect/line/polygon descriptors in a fixed 100-unit SVG view box.
 
 **Consequence:** No AI/image/puzzle API cost exists per round. Catalog recipes and invariants are the content engine.
 
@@ -21,26 +21,26 @@
 ## ADR-004 — Implemented difficulty curve
 
 **Decision:** Five rounds use beginner, steady, tricky, tricky, expert. Magnitudes
-are mutation-aware: geometry uses 8|10|12, 6|7|8, 5|6, and 4|5; non-scaling
-stroke uses 3|4, 2|3, 2|3, and 1|2; rotation uses 10|12, 8|9, 7|8, and 6|7
+are mutation-aware: geometry uses 8|10|12, 6|7|8, 5|6, and 5|6; non-scaling
+stroke uses 3|4, 2|3, 2|3, and 2; rotation uses 10|12, 8|9, 7|8, and 7|8
 for beginner through expert respectively. Grid sizes remain 4; 4|5; 5; and 6.
 
-**Consequence:** The unreleased generation-1 policy was recalibrated in place to
-remove sub-pixel geometry and near-invisible rotation cases before public launch.
-Changing these arrays after links ship changes deterministic output and requires
-a generation-version or compatibility-branch review.
+**Consequence:** Generation 2 raises only the Expert visibility floor while retaining
+its 6×6 density and the existing timers. Generation-1 links are not silently
+reinterpreted. Changing these arrays again requires a generation-version or
+compatibility-branch review.
 
 ## ADR-005 — Exactly one scalar mutation
 
 **Decision:** One target cell differs from the source glyph in exactly one geometry coordinate, stroke width, or rotation value matching one mutation descriptor. All other cells equal the source glyph.
 
-**Consequence:** Compound differences and palette mutations are outside generation version 1.
+**Consequence:** Compound differences and palette mutations are outside generation version 2.
 
 ## ADR-006 — Pinned xmur3/mulberry32 generation
 
 **Decision:** NFC-normalized xmur3 seeds mulberry32. Inclusive random integers use float scaling. Session and per-round label strings are pinned.
 
-**Consequence:** Algorithm, catalog order, draw order, recipe, or label changes require a generation-version decision and golden fixtures. Generation version 1 does not use xoshiro or rejection sampling.
+**Consequence:** Algorithm, catalog order, draw order, recipe, or label changes require a generation-version decision and golden fixtures. Generation version 2 does not use xoshiro or rejection sampling.
 
 ## ADR-007 — Classic four-phase reducer
 
@@ -68,7 +68,7 @@ a generation-version or compatibility-branch review.
 
 ## ADR-011 — Path-segment `opo1` challenge token
 
-**Decision:** Challenges use `/challenge/[token]` with `opo1.<base64url {v:1,g:1,s}>.<16-hex-checksum>`.
+**Decision:** Challenges use `/challenge/[token]` with `opo1.<base64url {v:1,g:2,s}>.<16-hex-checksum>`.
 
 **Consequence:** Maximum token is 256 chars, decoded payload 192 bytes, seed 96 chars. Token contains no score/target/duration/player data. The checksum is corruption detection, not authentication. Query-token documentation is incorrect.
 
@@ -110,7 +110,7 @@ a generation-version or compatibility-branch review.
 
 ## ADR-018 — Focus Run is additive to Classic Five
 
-**Decision:** Quick, Daily, and Challenge retain the exact five-round `PixelGameState`, `PuzzleTuple`, score cap, and public `opo1` replay contract. Focus uses `src/domain/focus-run/**` with independent schema/generation/rules/state version 1.
+**Decision:** Quick, Daily, and Challenge retain the exact five-round `PixelGameState`, `PuzzleTuple`, score cap, and public `opo1` replay contract. Focus uses `src/domain/focus-run/**` with schema/rules/state version 1 and generation version 2.
 
 **Consequence:** Focus changes must not silently alter Classic deterministic fixtures or challenge links. Shared rendering and pixel puzzle generation may be reused, but lifecycle and progression types remain separate.
 
@@ -128,7 +128,7 @@ a generation-version or compatibility-branch review.
 
 ## ADR-021 — Deterministic Weekly Focus
 
-**Decision:** Derive a UTC ISO-week seed `opo|focus-weekly|g1|YYYY-Www` and run the same Focus rules with `maxBoards = 15`.
+**Decision:** Derive a UTC ISO-week seed `opo|focus-weekly|g2|YYYY-Www` and run the same Focus rules with `maxBoards = 15`.
 
 **Consequence:** Weekly board generation is reproducible locally, but completion and score are not server-authoritative. Weekly may end early through charge exhaustion or an explicit board-5/10 checkpoint finish; no global leaderboard claim is valid.
 
@@ -140,6 +140,6 @@ a generation-version or compatibility-branch review.
 
 ## ADR-023 — Focus shares a normalized seed query
 
-**Decision:** Keep Classic `opo1` as the checksummed fixed-five token. Share Focus numbered-board sequences through `/focus?g=1&r=1&seed=<normalized opaque seed>` with optional `mode=weekly`; reject unsupported generation/rules versions, while score and boards-cleared remain share text only.
+**Decision:** Keep Classic `opo1` as the checksummed fixed-five token. Share Focus numbered-board sequences through `/focus?g=2&r=1&seed=<normalized opaque seed>` with optional `mode=weekly`; reject unsupported generation/rules versions, while score and boards-cleared remain share text only.
 
 **Consequence:** The Focus seed query reproduces puzzles but does not authenticate the sender or result, and it can appear in normal hosting logs. A future hardened format requires a new prefix/payload/checksum and compatibility fixtures. Local scores must not be presented as authenticated or globally ranked.

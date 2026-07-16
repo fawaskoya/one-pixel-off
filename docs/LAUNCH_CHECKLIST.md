@@ -164,7 +164,7 @@ Run from a clean checkout of the candidate using the committed lockfile.
 
 | Status | Required check | Evidence |
 | --- | --- | --- |
-| [ ] | Challenge metadata is `noindex, nofollow`. | `[rendered head capture]` |
+| [ ] | Challenge metadata is `noindex, follow`, uses a self-referencing share URL, and remains outside the sitemap. | `[rendered head capture]` |
 | [ ] | No tokenized URL appears in `sitemap.xml`. | `[sitemap capture]` |
 | [ ] | Server, error, analytics, and support systems normalize the path to `/challenge/[token]`. | `[configuration/network/log evidence]` |
 | [ ] | Referrer behavior is reviewed so tokenized paths are not unnecessarily disclosed. | `[header/browser evidence]` |
@@ -574,6 +574,7 @@ The MVP advertising rule is absolute:
 | Status | Variable/configuration | Preview | Production | Evidence |
 | --- | --- | --- | --- | --- |
 | [ ] | `NEXT_PUBLIC_SITE_URL` | `[value]` | `[canonical origin]` | `[redacted inventory]` |
+| [ ] | `GOOGLE_SITE_VERIFICATION` | empty unless a preview property is intentional | exact production URL-prefix token | `[redacted inventory]` |
 | [ ] | `NEXT_PUBLIC_CONTACT_EMAIL` | `[test/blank]` | `[monitored address]` | `[redacted inventory]` |
 | [ ] | `NEXT_PUBLIC_ANALYTICS_ENABLED` | `false` unless separately approved | `false` unless Gate 14 passes | `[inventory]` |
 | [ ] | `NEXT_PUBLIC_ADS_ENABLED` | `false` | `false` unless Gate 15 passes | `[inventory]` |

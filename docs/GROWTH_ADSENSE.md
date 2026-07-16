@@ -209,7 +209,8 @@ No daily archive should be generated solely for indexing. Historical pages requi
 - The current format contains a schema version, generation version, opaque seed, and checksum.
 - It does not contain a player name, email, account ID, score, device ID, contact, or board image.
 - The checksum detects corruption and casual editing; it is not a signature or proof of authorship.
-- Challenge pages are `noindex, nofollow` and must never enter the sitemap.
+- Challenge pages are `noindex, follow` and must never enter the sitemap.
+- `robots.txt` must allow challenge responses to be crawled so Google can observe their `noindex` directive; do not use a robots disallow as a substitute for `noindex`.
 - Logs and analytics normalize the route to `/challenge/[token]` before storage or reporting.
 
 ### Sender experience
@@ -327,7 +328,7 @@ An indexable article must:
 - Use one production HTTPS origin and one canonical host.
 - Keep preview, localhost, tokenized, error, offline, and state-only routes out of the index.
 - Include only canonical, substantive public pages in `sitemap.xml`.
-- Keep `/challenge/[token]` explicitly `noindex, nofollow`.
+- Keep `/challenge/[token]` explicitly `noindex, follow` so crawlers can discover normal internal links without indexing tokenized pages.
 - Give every indexable page a distinct title, description, heading, and purpose.
 - Ensure server-rendered editorial content is readable without client interaction.
 - Do not block required production assets or the operational `ads.txt` file.
@@ -717,6 +718,7 @@ NEXT_PUBLIC_SITE_URL=https://[canonical-domain]
 NEXT_PUBLIC_CONTACT_EMAIL=[monitored-address]
 NEXT_PUBLIC_ANALYTICS_ENABLED=false
 NEXT_PUBLIC_ADS_ENABLED=false
+GOOGLE_SITE_VERIFICATION=
 ADSENSE_PUBLISHER_ID=
 ```
 
@@ -725,9 +727,13 @@ ADSENSE_PUBLISHER_ID=
 - Missing, malformed, sample, or unapproved values fail closed.
 - A configuration change requires review, deployment, and network verification.
 
-### `ads.txt` gate
+### Search Console ownership gate
 
-The current route intentionally emits a disabled comment unless `ADSENSE_PUBLISHER_ID` matches `pub-` followed by 10–20 digits. Activation requires:
+`GOOGLE_SITE_VERIFICATION` accepts only the `content` value from the Search Console HTML tag. When configured, the root metadata emits `<meta name="google-site-verification" ...>` without loading a third-party script. Keep the token deployed while the URL-prefix property is in use because Search Console checks it periodically.
+
+### AdSense ownership and `ads.txt` gate
+
+The current root metadata and `/ads.txt` route remain inert unless `ADSENSE_PUBLISHER_ID` matches `pub-` followed by 10–20 digits. A valid value emits the `google-adsense-account` ownership meta tag and the Google DIRECT seller line. This connects/verifies the site but does not load the AdSense script, request an ad, or enable a placement. Activation requires:
 
 1. Copy the exact publisher ID from the approved account.
 2. Verify the exact seller line shown by AdSense.

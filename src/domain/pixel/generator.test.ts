@@ -204,7 +204,7 @@ describe("procedural vector puzzle invariants", () => {
       beginner: { offset: 8, size: 8, spacing: 8, stroke: 3, rotation: 10 },
       steady: { offset: 6, size: 6, spacing: 6, stroke: 2, rotation: 8 },
       tricky: { offset: 5, size: 5, spacing: 5, stroke: 2, rotation: 7 },
-      expert: { offset: 4, size: 4, spacing: 4, stroke: 1, rotation: 6 },
+      expert: { offset: 5, size: 5, spacing: 5, stroke: 2, rotation: 7 },
     };
     const observed = new Map<string, Set<number>>();
 
@@ -303,11 +303,11 @@ describe("UTC daily seeds", () => {
     expect(utcDateKeyFromEpochMs(atMidnight)).toBe("2026-07-15");
     expect(dailySeedAt(before)).toEqual({
       ok: true,
-      value: "opo|daily|g1|2026-07-14",
+      value: "opo|daily|g2|2026-07-14",
     });
     expect(dailySeedAt(atMidnight)).toEqual({
       ok: true,
-      value: "opo|daily|g1|2026-07-15",
+      value: "opo|daily|g2|2026-07-15",
     });
   });
 

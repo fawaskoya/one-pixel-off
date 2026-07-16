@@ -1,25 +1,33 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { ServiceWorkerRegistration } from "@/components/site/service-worker-registration";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
+const googleSiteVerification =
+  process.env.GOOGLE_SITE_VERIFICATION?.trim() || undefined;
+const adsensePublisherId = process.env.ADSENSE_PUBLISHER_ID?.trim();
+const googleAdsenseAccount = /^pub-\d{10,20}$/.test(adsensePublisherId ?? "")
+  ? `ca-${adsensePublisherId}`
+  : undefined;
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#090c11",
+  colorScheme: "dark",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: "One Pixel Off — Spot the tiny mistake",
+    default: "One Pixel Off — Free Spot-the-Difference Puzzle Game",
     template: "%s | One Pixel Off",
   },
   description: siteConfig.description,
   applicationName: siteConfig.name,
-  keywords: [
-    "spot the difference game",
-    "visual puzzle",
-    "daily puzzle",
-    "browser game",
-    "observation game",
-  ],
   authors: [{ name: "One Pixel Off" }],
   creator: "One Pixel Off",
   publisher: "One Pixel Off",
@@ -47,6 +55,12 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  verification: googleSiteVerification
+    ? { google: googleSiteVerification }
+    : undefined,
+  other: googleAdsenseAccount
+    ? { "google-adsense-account": googleAdsenseAccount }
+    : undefined,
   category: "games",
 };
 

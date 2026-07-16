@@ -1,5 +1,5 @@
 export const FOCUS_RUN_SCHEMA_VERSION = 1 as const;
-export const FOCUS_RUN_GENERATION_VERSION = 1 as const;
+export const FOCUS_RUN_GENERATION_VERSION = 2 as const;
 export const FOCUS_RUN_RULES_VERSION = 1 as const;
 export const FOCUS_RUN_STATE_VERSION = 1 as const;
 

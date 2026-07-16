@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import {
   Callout,
   ContentPage,
@@ -6,17 +5,19 @@ import {
   InlineLink,
   PrimaryContentLink,
 } from "@/components/content";
+import { createPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: "About",
+export const metadata = createPageMetadata({
+  title: "About the Procedural Puzzle Engine",
   description:
     "Why One Pixel Off is a tiny, deterministic visual puzzle with no accounts, uploads, or paid generation APIs.",
-  alternates: { canonical: "/about" },
-};
+  path: "/about",
+});
 
 export default function AboutPage() {
   return (
     <ContentPage
+      path="/about"
       eyebrow="The experiment"
       title="A tiny test for sharp eyes"
       description="One Pixel Off turns a grid of almost-identical marks into a five-round visual sprint. Every puzzle is made from code, right in your browser."

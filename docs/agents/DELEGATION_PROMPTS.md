@@ -7,7 +7,7 @@ Replace bracketed scope before dispatch. The repository is shared; assign non-ov
 ```text
 Own only [FILES] under the pixel generator/catalog/invariant/tests.
 
-Preserve generation version 1 unless explicitly authorized. Current contract: NFC xmur3 → mulberry32; session label `${seed}|g1|session`; round label `${seed}|g1|r${roundIndex}`; square GridSize 4|5|6; difficulties beginner/steady/tricky/tricky/expert; exact catalog order and constants in source; one scalar target mutation; complete row-major cells.
+Preserve generation version 2 unless explicitly authorized. Current contract: NFC xmur3 → mulberry32; session label `${seed}|g2|session`; round label `${seed}|g2|r${roundIndex}`; square GridSize 4|5|6; difficulties beginner/steady/tricky/tricky/expert; exact catalog order and constants in source; one scalar target mutation; complete row-major cells.
 
 Do not introduce rectangular grids, xoshiro, rejection sampling, retry/fallback generation, 128-bit-hex seed requirements, or undocumented catalog items. If a fix changes deterministic output, stop and report fixture/version impact before proceeding.
 
@@ -31,7 +31,7 @@ Test deadline-1/deadline/deadline+1, backward/nonfinite time, stale guards, inva
 ```text
 Own only [FILES] for challenge codec/route/tests.
 
-Canonical route is /challenge/[token]. Token is opo1.<unpadded canonical base64url JSON>.<16 lowercase hex checksum>. Payload is exactly {v:1,g:1,s:string}. Limits: token 256 chars; decoded bytes 192; normalized URL-safe seed 96 chars. Prefix mismatch is TOKEN_UNSUPPORTED; other malformed data is TOKEN_INVALID.
+Canonical route is /challenge/[token]. Token is opo1.<unpadded canonical base64url JSON>.<16 lowercase hex checksum>. Payload is exactly {v:1,g:2,s:string}. Limits: token 256 chars; decoded bytes 192; normalized URL-safe seed 96 chars. Prefix mismatch is TOKEN_UNSUPPORTED; other malformed data is TOKEN_INVALID.
 
 Preserve xmur3 checksum labels and constant-work comparison. Token contains no score, duration, mode, target, descriptor, identity, or secret. Checksum is not authentication.
 
@@ -77,7 +77,7 @@ Test setup through five rounds on pointer and keyboard; 4x4, 5x5, 6x6; ≤380px,
 ## 8. Content/SEO agent
 
 ```text
-Own only [ROUTES/CONTENT]. Current indexable routes are /, /play, /how-to-play, /categories, /about, /privacy, /terms, /contact. Challenge is /challenge/[token] and noindex; /offline is noindex. There is no /daily or /stats route.
+Own only [ROUTES/CONTENT]. Current indexable routes are /, /focus, /play, /how-to-play, /categories, /about. Privacy, terms, contact, challenge, and offline are reachable but nonindexed until their publication prerequisites are satisfied. Challenge is /challenge/[token]. There is no /daily or /stats route.
 
 Keep technical claims aligned: square 4/5/6 boards; xmur3/mulberry32 code generation; score max 1250; aggregate local stats only; limited offline fallback; no live analytics/ad network. Create one original useful page/update, not scaled seed/date pages. Avoid IQ, medical, legal-clearance, traffic, or revenue promises. Run links/metadata/build checks and do not publish externally.
 ```

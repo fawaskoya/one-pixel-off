@@ -1,5 +1,18 @@
 import Link from "next/link";
+import { JsonLd } from "@/components/seo/json-ld";
 import { AdSlot } from "@/components/site/ad-slot";
+import { createPageMetadata } from "@/lib/metadata";
+import { absoluteUrl, siteConfig } from "@/lib/site";
+
+const homeDescription =
+  "Play a free spot-the-difference visual puzzle in your browser. Find the one tile that breaks the pattern in Focus Run, Daily Scan, or five-board Classic.";
+
+export const metadata = createPageMetadata({
+  title: "One Pixel Off — Free Spot the Difference Puzzle Game",
+  description: homeDescription,
+  path: "/",
+  absoluteTitle: true,
+});
 
 const patternFamilies = [
   { name: "Alignment", code: "A-01", note: "One mark slips off the shared axis" },
@@ -40,15 +53,27 @@ function DemoBoard() {
 }
 
 export default function Home() {
+  const websiteData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: siteConfig.name,
+    alternateName: siteConfig.shortName,
+    url: absoluteUrl("/"),
+    description: homeDescription,
+    inLanguage: "en",
+  } as const;
+
   return (
     <>
+      <JsonLd data={websiteData} />
       <section className="hero hero--pixel shell" aria-labelledby="hero-title">
         <div className="hero__copy">
           <p className="eyebrow"><span className="status-dot" /> Visual inspection test 001</p>
           <h1 id="hero-title">One detail is wrong. <em>How fast can you see it?</em></h1>
           <p className="hero__lede">
-            Scan code-generated patterns, find each single anomaly, and keep
-            your focus alive as the timer tightens.
+            Play a free spot-the-difference puzzle built from code-generated
+            patterns. Find each single anomaly and keep your focus alive as the
+            timer tightens.
           </p>
           <div className="button-row">
             <Link className="button button--primary button--large" href="/focus">

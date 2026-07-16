@@ -1,10 +1,13 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { JsonLd } from "@/components/seo/json-ld";
+import { absoluteUrl, siteConfig } from "@/lib/site";
 
 type ContentPageProps = {
   eyebrow?: string;
   title: string;
   description: string;
+  path: `/${string}`;
   updated?: string;
   children: ReactNode;
 };
@@ -25,13 +28,40 @@ export function ContentPage({
   eyebrow,
   title,
   description,
+  path,
   updated,
   children,
 }: ContentPageProps) {
+  const breadcrumbData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: siteConfig.name,
+        item: absoluteUrl("/"),
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: title,
+        item: absoluteUrl(path),
+      },
+    ],
+  } as const;
+
   return (
     <div className="content-shell">
+      <JsonLd data={breadcrumbData} />
       <div className="content-shell__inner">
         <article>
+          <nav className="content-breadcrumb" aria-label="Breadcrumb">
+            <ol>
+              <li><Link href="/">Home</Link></li>
+              <li aria-current="page">{title}</li>
+            </ol>
+          </nav>
           <header className="content-header">
             {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
             <h1>{title}</h1>

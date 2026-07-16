@@ -24,7 +24,7 @@ function difficultyConfiguration(
 }
 
 /**
- * Perceptual difficulty policy for generation version 1.
+ * Perceptual difficulty policy for generation version 2.
  *
  * Geometry uses view-box units, stroke uses non-scaling CSS-pixel-like units,
  * and rotation uses degrees. Keeping separate bands prevents a numerically
@@ -36,7 +36,7 @@ export const PIXEL_DIFFICULTY_CONFIG: Readonly<
   beginner: difficultyConfiguration([4], [8, 10, 12], [3, 4], [10, 12]),
   steady: difficultyConfiguration([4, 5], [6, 7, 8], [2, 3], [8, 9]),
   tricky: difficultyConfiguration([5], [5, 6], [2, 3], [7, 8]),
-  expert: difficultyConfiguration([6], [4, 5], [1, 2], [6, 7]),
+  expert: difficultyConfiguration([6], [5, 6], [2], [7, 8]),
 };
 
 export function isPixelMutationMagnitudeAllowed(

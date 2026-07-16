@@ -19,7 +19,7 @@ export type FocusRunConfig = Readonly<{
 
 export type PreparedFocusRun = Readonly<{
   schemaVersion: 1;
-  generationVersion: 1;
+  generationVersion: 2;
   rulesVersion: 1;
   runId: string;
   seed: string;

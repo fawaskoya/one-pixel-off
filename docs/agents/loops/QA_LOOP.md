@@ -34,7 +34,7 @@ Do not patch the UI to hide a lower-layer defect.
 - Five distinct families from exact eight-item catalog.
 - Palettes from exact six-item catalog.
 - One target, one mutation, one scalar difference; every non-target equals source.
-- Same seed/generation 1 reproduces descriptors.
+- Same seed/generation 2 reproduces descriptors.
 - No gameplay fetch/AI/image request.
 
 ### Ready/start
@@ -68,7 +68,7 @@ Do not patch the UI to hide a lower-layer defect.
 
 - URL is `/challenge/[token]`.
 - Format `opo1.payload.16hex`; max token 256.
-- Payload exact `{v:1,g:1,s}`; decoded max 192 bytes; seed max 96.
+- Payload exact `{v:1,g:2,s}`; decoded max 192 bytes; seed max 96.
 - Test missing/truncated/tampered/bad checksum/alphabet/base64/UTF-8/JSON/shape/extra keys/unsafe seed.
 - Unknown prefix returns unsupported rather than generic invalid.
 - Fresh challenge rounds equal source seed rounds.
@@ -76,7 +76,7 @@ Do not patch the UI to hide a lower-layer defect.
 
 ### Daily
 
-- Seed exact `opo|daily|g1|YYYY-MM-DD` UTC.
+- Seed exact `opo|daily|g2|YYYY-MM-DD` UTC.
 - Invalid calendar date rejected.
 - Same UTC date reproduces.
 - Do not expect first-attempt result or practice labels; they are not implemented.
@@ -110,7 +110,7 @@ Do not patch the UI to hide a lower-layer defect.
 
 ### Routes/content
 
-- Sitemap: `/`, `/play`, `/how-to-play`, `/categories`, `/about`, `/privacy`, `/terms`, `/contact`.
+- Sitemap: `/`, `/focus`, `/play`, `/how-to-play`, `/categories`, `/about`.
 - Challenge and offline are noindex; robots disallow `/challenge/`.
 - There is no `/daily` or `/stats` route.
 

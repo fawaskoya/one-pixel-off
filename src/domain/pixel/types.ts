@@ -79,7 +79,7 @@ export type PuzzleCellDescriptor = Readonly<{
 
 export type PixelPuzzleDescriptor = Readonly<{
   schemaVersion: 1;
-  generationVersion: 1;
+  generationVersion: 2;
   id: string;
   roundIndex: RoundIndex;
   difficulty: DifficultyTier;
@@ -102,7 +102,7 @@ export type PuzzleTuple = readonly [
 
 export type PreparedPixelSession = Readonly<{
   schemaVersion: 1;
-  generationVersion: 1;
+  generationVersion: 2;
   sessionId: string;
   mode: PixelSessionMode;
   seed: string;
@@ -226,6 +226,6 @@ export type PixelDomainResult<T> =
 
 export type ChallengePayloadV1 = Readonly<{
   v: 1;
-  g: 1;
+  g: 2;
   s: string;
 }>;

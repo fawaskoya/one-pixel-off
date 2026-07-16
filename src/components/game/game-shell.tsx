@@ -22,7 +22,7 @@ import {
 } from "@/domain/pixel";
 import { recordPixelSession } from "@/lib/client/pixel-storage";
 import { shareChallenge, type ShareOutcome } from "@/lib/client/share";
-import { PuzzleBoard } from "./puzzle-board";
+import { PuzzleBoard, useGameInputModality } from "./puzzle-board";
 
 type GameShellProps = {
   initialMode?: PixelSessionMode;
@@ -84,8 +84,13 @@ export function GameShell({
   const [setupError, setSetupError] = useState<string | null>(challengeError ?? null);
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
   const [manualShareUrl, setManualShareUrl] = useState<string | null>(null);
+  const [saveWarning, setSaveWarning] = useState<string | null>(null);
+  const [focusBoardOnStart, setFocusBoardOnStart] = useState(false);
   const recordedSessions = useRef(new Set<string>());
   const tokenSequence = useRef(0);
+  const screenRef = useRef<HTMLElement | null>(null);
+  const previousPhaseRef = useRef<string>("setup");
+  const inputModality = useGameInputModality();
 
   const nextToken = (label: string) => {
     tokenSequence.current += 1;
@@ -138,6 +143,22 @@ export function GameShell({
   const activePhaseToken = state && state.phase !== "session_result" ? state.phaseToken : "";
 
   useEffect(() => {
+    const phaseChanged = previousPhaseRef.current !== phase;
+    previousPhaseRef.current = phase;
+    if (!phaseChanged || phase === "playing" || inputModality.current !== "keyboard") {
+      return;
+    }
+
+    const animationFrame = window.requestAnimationFrame(() => {
+      const primaryAction =
+        screenRef.current?.querySelector<HTMLElement>(".button--signal:not(:disabled)") ??
+        screenRef.current?.querySelector<HTMLElement>("button:not(:disabled), a[href]");
+      primaryAction?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [inputModality, phase]);
+
+  useEffect(() => {
     if (phase !== "playing" || activeRoundIndex < 0) return;
     const guard = {
       sessionId: activeSessionId,
@@ -169,17 +190,23 @@ export function GameShell({
     if (!completedSessionId || !completedMode) return;
     if (recordedSessions.current.has(completedSessionId)) return;
     recordedSessions.current.add(completedSessionId);
-    recordPixelSession({
+    const saved = recordPixelSession({
       sessionId: completedSessionId,
       mode: completedMode,
       dailyDateUtc: completedDailyDate,
       roundsFound: completedFound,
       score: completedScore,
     });
+    setSaveWarning(
+      saved
+        ? null
+        : "This browser blocked local progress. Your result is complete, but its aggregate stats could not be saved on this device.",
+    );
   }, [completedSessionId, completedMode, completedDailyDate, completedFound, completedScore]);
 
   const startRound = () => {
     if (state?.phase !== "ready") return;
+    setFocusBoardOnStart(inputModality.current === "keyboard");
     send({
       type: "START_ROUND",
       nowMs: Date.now(),
@@ -215,6 +242,8 @@ export function GameShell({
     setSetupError(null);
     setShareFeedback(null);
     setManualShareUrl(null);
+    setSaveWarning(null);
+    setFocusBoardOnStart(false);
   };
 
   const handleShare = async (prepared: PreparedPixelSession, score: number) => {
@@ -231,7 +260,7 @@ export function GameShell({
 
   if (state === null) {
     return (
-      <section className="pixel-play-page pixel-play-page--setup">
+      <section className="pixel-play-page pixel-play-page--setup" ref={screenRef}>
         <div className="pixel-game-shell">
           <div className="pixel-panel">
             <p className="eyebrow">Visual inspection / five rounds</p>
@@ -304,7 +333,7 @@ export function GameShell({
   if (state.phase === "ready") {
     const puzzle = selectCurrentPuzzle(state);
     return (
-      <section className="game-overlay game-overlay--ready">
+      <section className="game-overlay game-overlay--ready" ref={screenRef}>
         <div className="pixel-game-shell">
           <div className="pixel-panel">
             <div className="pixel-hud">
@@ -333,7 +362,7 @@ export function GameShell({
       "--timer-progress": `${(remainingMs / PIXEL_ROUND_DURATION_MS) * 100}%`,
     } as CSSProperties;
     return (
-      <section className="game-overlay game-overlay--playing">
+      <section className="game-overlay game-overlay--playing" ref={screenRef}>
         <div className="pixel-stage">
           <div className="pixel-hud">
             <RoundTrack current={state.roundIndex + 1} completed={state.progress.outcomes.length} />
@@ -344,6 +373,7 @@ export function GameShell({
           </div>
           <div className="timer-rail" data-urgent={remainingMs <= 5_000} style={timerStyle} aria-hidden="true"><i /></div>
           <PuzzleBoard
+            focusFirstCell={focusBoardOnStart}
             interactive
             onCell={tapCell}
             puzzle={selectCurrentPuzzle(state)}
@@ -362,7 +392,7 @@ export function GameShell({
   if (state.phase === "round_result") {
     const found = state.outcome.result === "found";
     return (
-      <section className="game-overlay game-overlay--result">
+      <section className="game-overlay game-overlay--result" ref={screenRef}>
         <div className="pixel-game-shell">
           <div className="pixel-hud">
             <RoundTrack current={state.roundIndex + 1} completed={state.progress.outcomes.length} />
@@ -407,7 +437,7 @@ export function GameShell({
   const found = selectFoundRounds(state);
   const wrong = selectTotalWrongTaps(state);
   return (
-    <section className="pixel-play-page pixel-play-page--summary">
+    <section className="pixel-play-page pixel-play-page--summary" ref={screenRef}>
       <div className="pixel-game-shell">
         <div className="pixel-panel" aria-live="polite">
           <p className="eyebrow">Inspection complete</p>
@@ -421,6 +451,7 @@ export function GameShell({
             <p className="summary-stat"><strong>{found}/5</strong><span>found</span></p>
             <p className="summary-stat"><strong>{wrong}</strong><span>wrong taps</span></p>
           </div>
+          {saveWarning ? <p className="game-error" role="alert">{saveWarning}</p> : null}
           {shareFeedback ? <p className="share-feedback" role="status">{shareFeedback}</p> : null}
           {manualShareUrl ? (
             <div className="manual-share">

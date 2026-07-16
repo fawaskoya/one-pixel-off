@@ -1,21 +1,23 @@
-import type { Metadata } from "next";
 import {
   Callout,
   ContentPage,
   ContentSection,
   InlineLink,
 } from "@/components/content";
+import { createPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata = createPageMetadata({
   title: "Privacy Notice",
   description:
     "Read the launch-stage privacy notice for One Pixel Off, including local scores, hosting logs, optional analytics, and future advertising.",
-  alternates: { canonical: "/privacy" },
-};
+  path: "/privacy",
+  noIndex: true,
+});
 
 export default function PrivacyPage() {
   return (
     <ContentPage
+      path="/privacy"
       eyebrow="Launch-stage template"
       title="Privacy notice"
       description="This draft explains the intended data practices for the first web release. It must be reviewed against the final domain, operator, hosting, analytics, consent, and advertising setup before public launch."

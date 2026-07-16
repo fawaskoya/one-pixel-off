@@ -46,7 +46,7 @@ describe("challenge tokens", () => {
       ok: true,
       value: {
         seed: "opaque-seed-001",
-        generationVersion: 1,
+        generationVersion: 2,
         tokenId: token.split(".")[2],
       },
     });
@@ -105,7 +105,7 @@ describe("challenge tokens", () => {
   });
 
   it("rejects unknown prefixes separately from malformed tokens", () => {
-    const unsupported = tokenFromJson({ v: 1, g: 1, s: "safe" }, "opo2");
+    const unsupported = tokenFromJson({ v: 1, g: 2, s: "safe" }, "opo2");
     expect(decodePixelChallengeToken(unsupported)).toMatchObject({
       ok: false,
       error: { code: "TOKEN_UNSUPPORTED" },
@@ -128,13 +128,13 @@ describe("challenge tokens", () => {
 
   it("rejects valid-checksum payloads with extra keys, wrong values, or unsafe seeds", () => {
     const values: unknown[] = [
-      { v: 1, g: 1, s: "safe", score: 250 },
-      { v: 2, g: 1, s: "safe" },
-      { v: 1, g: 2, s: "safe" },
-      { v: 1, g: 1, s: 12 },
-      { v: 1, g: 1, s: "personal data with spaces" },
-      { v: 1, g: 1, s: "cafe\u0301" },
-      [1, 1, "safe"],
+      { v: 1, g: 2, s: "safe", score: 250 },
+      { v: 2, g: 2, s: "safe" },
+      { v: 1, g: 1, s: "safe" },
+      { v: 1, g: 2, s: 12 },
+      { v: 1, g: 2, s: "personal data with spaces" },
+      { v: 1, g: 2, s: "cafe\u0301" },
+      [1, 2, "safe"],
       null,
     ];
     for (const value of values) {
@@ -147,7 +147,7 @@ describe("challenge tokens", () => {
 
   it("rejects prototype-pollution-shaped, invalid JSON, and invalid UTF-8 payloads", () => {
     const prototypeJson = Buffer.from(
-      '{"v":1,"g":1,"s":"safe","__proto__":{"polluted":true}}',
+      '{"v":1,"g":2,"s":"safe","__proto__":{"polluted":true}}',
       "utf8",
     );
     const candidates = [

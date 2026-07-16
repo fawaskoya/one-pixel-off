@@ -6,7 +6,7 @@ Add one bounded generator-catalog change or one editorial content improvement. D
 
 Read exact `catalog.ts`, `generator.ts`, constants, invariants, fixtures, and specs.
 
-Current families: rings, stripes, arrows, corners, dots, diamonds, chevrons, orbit. Current palettes and difficulty arrays are versioned generation inputs. Any order/recipe/candidate/bound/delta/grid change can alter generation version 1.
+Current families: rings, stripes, arrows, corners, dots, diamonds, chevrons, orbit. Current palettes and difficulty arrays are versioned generation inputs. Any order/recipe/candidate/bound/delta/grid change can alter generation version 2.
 
 Procedure:
 
@@ -21,7 +21,7 @@ Do not add remote assets, text/logo glyphs, compound mutation, unbounded geometr
 
 ## Track B — editorial content
 
-Current routes are `/`, `/play`, `/how-to-play`, `/categories`, `/about`, `/privacy`, `/terms`, `/contact`; challenge/offline are nonindexed support routes.
+Current indexable routes are `/`, `/focus`, `/play`, `/how-to-play`, `/categories`, `/about`; privacy, terms, contact, challenge, and offline are currently nonindexed support/review routes.
 
 1. Define one real user question.
 2. Audit overlap with existing route content.

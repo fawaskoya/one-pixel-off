@@ -20,7 +20,7 @@ Nothing calls an image-generation API. A deterministic seed selects an authored 
 - Versioned local storage keeps aggregate Classic statistics, Daily completion dates, and aggregate Focus records. Daily streaks, seven-day activity, Clean Five, Every Angle, Deep Focus, and family mastery are derived rather than stored as unlock flags.
 - There are no accounts, remote generation calls, paid lives, ad-watched revives, or globally verified leaderboards.
 
-Classic Challenge replay uses the checksummed `/challenge/[token]` format. Focus results share the exact numbered-board sequence through `/focus?g=1&r=1&seed=<normalized opaque seed>` and add `mode=weekly` for Weekly. The Focus query pins generation/rules versions and validates the seed, but it is not a signed/checksummed token or proof of score; a hardened token format remains a separate compatibility and privacy decision.
+Classic Challenge replay uses the checksummed `/challenge/[token]` format. Focus results share the exact numbered-board sequence through `/focus?g=2&r=1&seed=<normalized opaque seed>` and add `mode=weekly` for Weekly. The Focus query pins generation/rules versions and validates the seed, but it is not a signed/checksummed token or proof of score; a hardened token format remains a separate compatibility and privacy decision.
 
 The normative generator, reducer, timing, and token rules are in [docs/GAME_LOGIC.md](docs/GAME_LOGIC.md).
 
@@ -53,9 +53,10 @@ Copy `.env.example` to `.env.local` when you need non-default values.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | Canonical public origin. |
+| `NEXT_PUBLIC_SITE_URL` | local dev origin; production project URL | Canonical public origin. Set this explicitly when moving to a custom domain. |
+| `GOOGLE_SITE_VERIFICATION` | empty | Search Console HTML-tag content token; emitted as verification metadata only. |
 | `NEXT_PUBLIC_ADS_ENABLED` | `false` | Reserved ad-placement gate; keep false until every launch gate is met. |
-| `ADSENSE_PUBLISHER_ID` | empty | Server-only publisher value used by `/ads.txt` after approval. |
+| `ADSENSE_PUBLISHER_ID` | empty | Public `pub-…` account identifier used for AdSense ownership metadata and `/ads.txt`; does not enable ads. |
 | `NEXT_PUBLIC_ANALYTICS_ENABLED` | `false` | Reserved analytics gate; no provider is connected. |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | empty | Monitored support/privacy mailbox required before launch. |
 

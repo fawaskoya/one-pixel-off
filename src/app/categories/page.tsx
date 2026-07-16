@@ -1,16 +1,16 @@
-import type { Metadata } from "next";
 import {
   ContentPage,
   ContentSection,
   PrimaryContentLink,
 } from "@/components/content";
+import { createPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: "Pattern Lab",
+export const metadata = createPageMetadata({
+  title: "Visual Puzzle Pattern Lab",
   description:
-    "Explore the procedural vector pattern families and mutation rules behind One Pixel Off puzzles.",
-  alternates: { canonical: "/categories" },
-};
+    "Explore the rings, stripes, arrows, dots, diamonds, and other procedural pattern families behind One Pixel Off visual puzzles.",
+  path: "/categories",
+});
 
 const families = [
   ["Rings", "Concentric circles where a radius, center, or stroke slips out of rhythm.", "Size · offset · stroke"],
@@ -26,6 +26,7 @@ const families = [
 export default function PatternLabPage() {
   return (
     <ContentPage
+      path="/categories"
       eyebrow="Pattern inventory"
       title="Inside the pattern lab"
       description="A small grammar of vector shapes can produce an enormous supply of fair, reproducible puzzles without creating or downloading images."

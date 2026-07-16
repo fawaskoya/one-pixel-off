@@ -119,7 +119,7 @@ Although `SEED_MAX_LENGTH = 128` exists in constants, the current generator call
 
 Quick seed generation uses two `Uint32` values from `crypto.getRandomValues` where available plus `Date.now()`. Its fallback uses `Date.now()` and `Math.random()`; it is uniqueness-oriented, not cryptographic.
 
-Daily seed is exactly `opo|daily|g1|YYYY-MM-DD`, where the date is validated as a real UTC calendar date.
+Daily seed is exactly `opo|daily|g2|YYYY-MM-DD`, where the date is validated as a real UTC calendar date.
 
 ### PRNG and ordering
 
@@ -127,11 +127,11 @@ Daily seed is exactly `opo|daily|g1|YYYY-MM-DD`, where the date is validated as 
 - `mulberry32` emits a float in `[0,1)`.
 - `randomInteger(random,min,max)` is inclusive and uses `min + floor(random() × range)`.
 - `chooseOne` indexes ordered arrays through `randomInteger`.
-- Session ordering random is seeded with `${seed}|g1|session`.
+- Session ordering random is seeded with `${seed}|g2|session`.
 - Family and palette arrays are independently shuffled in sequence with that stream; the first five of each are used.
-- Puzzle random is seeded with `${seed}|g1|r${roundIndex}`.
+- Puzzle random is seeded with `${seed}|g2|r${roundIndex}`.
 
-Any algorithm, string label, catalog order, draw order, recipe, or constant change can alter generation-version-1 output.
+Any algorithm, string label, catalog order, draw order, recipe, or constant change can alter generation-version-2 output.
 
 ### Descriptor and invariant shape
 
@@ -153,9 +153,9 @@ Focus does not construct an unbounded puzzle array. `createFocusRunState` prepar
 
 The numbered-board labels are versioned and deterministic:
 
-- family deck: `${seed}|focus-g1|family-block:<zero-based block>`;
-- board schedule/palette: `${seed}|focus-g1|b<board>|schedule`;
-- derived pixel seed: `${seed}|focus-g1|b<board>`.
+- family deck: `${seed}|focus-g2|family-block:<zero-based block>`;
+- board schedule/palette: `${seed}|focus-g2|b<board>|schedule`;
+- derived pixel seed: `${seed}|focus-g2|b<board>`.
 
 Each block of eight boards shuffles all eight families once, preventing family starvation within a complete block. The board delegates its actual one-scalar puzzle construction to `generatePixelPuzzle`, with `roundIndex = (boardNumber - 1) % 5`, while selecting difficulty from the Focus schedule. The same Focus seed, version, and board number therefore reproduce the same descriptor without changing Classic session labels.
 
@@ -181,7 +181,7 @@ Classic uses beginner, steady, tricky, tricky, expert. Focus selects from the sa
 | beginner | 4 | 8, 10, 12 | 3, 4 | 10°, 12° |
 | steady | 4 or 5 | 6, 7, 8 | 2, 3 | 8°, 9° |
 | tricky | 5 | 5, 6 | 2, 3 | 7°, 8° |
-| expert | 6 | 4, 5 | 1, 2 | 6°, 7° |
+| expert | 6 | 5, 6 | 2 | 7°, 8° |
 
 ### Families and palettes
 
@@ -237,7 +237,7 @@ Canonical route:
 
 Canonical token:
 
-`opo1.<base64url(JSON.stringify({v:1,g:1,s:seed}))>.<16 lowercase hex checksum>`
+`opo1.<base64url(JSON.stringify({v:1,g:2,s:seed}))>.<16 lowercase hex checksum>`
 
 Limits and validation:
 
@@ -247,7 +247,7 @@ Limits and validation:
 - Checksum is two padded xmur3 outputs over labeled payload strings, compared with constant-work string logic. It detects corruption; it is not authentication.
 - Payload segment must be canonical unpadded base64url.
 - Decoded payload: maximum 192 bytes and fatal UTF-8 decoding.
-- JSON must be a plain record with exactly keys `g`, `s`, `v` and values `g:1`, `v:1`.
+- JSON must be a plain record with exactly keys `g`, `s`, `v` and values `g:2`, `v:1`.
 - Seed must already equal its NFC-normalized, safe, maximum-96-character form.
 
 Successful decode returns seed, generation version `1`, and the checksum as `tokenId`. Token payload contains no score, mode, duration, round count, target, descriptor, name, account, or secret.
@@ -298,7 +298,7 @@ Classic session results encode the prepared seed and form `${origin}/challenge/$
 
 The score is in share text, not in the challenge token.
 
-`FocusRunShell` creates a replay URL with `g=1`, `r=1`, and the URL-encoded normalized seed, and includes `mode=weekly` for a Weekly run. The route rejects unsupported contract versions. `shareFocusRun` adds score/boards-cleared text and applies the same native-share/clipboard outcome handling. Opening the link reconstructs the deterministic numbered-board sequence locally; it does not reproduce or authenticate the sender’s taps, time, score, or finish point.
+`FocusRunShell` creates a replay URL with `g=2`, `r=1`, and the URL-encoded normalized seed, and includes `mode=weekly` for a Weekly run. The route rejects unsupported contract versions. `shareFocusRun` adds score/boards-cleared text and applies the same native-share/clipboard outcome handling. Opening the link reconstructs the deterministic numbered-board sequence locally; it does not reproduce or authenticate the sender’s taps, time, score, or finish point.
 
 The Focus URL is intentionally simpler than `opo1`: its opaque seed is normalized to the existing safe 96-character alphabet/limit, but has no dedicated prefix, payload version, or checksum. Query presence is not proof of authorship. A future hardened Focus token requires a new prefix/payload, copy-error limits, privacy review, and compatibility fixtures; it must not overload Classic `opo1`.
 
@@ -339,7 +339,7 @@ Expected Classic setup/challenge errors are displayed in `GameShell`; Focus seed
 
 ## 13. Current route inventory
 
-Indexable sitemap routes: `/`, `/focus`, `/play`, `/how-to-play`, `/categories`, `/about`, `/privacy`, `/terms`, `/contact`. Focus and Weekly selection live on `/focus`; shared seed queries canonicalize to that base route rather than creating generated sitemap pages.
+Indexable sitemap routes: `/`, `/focus`, `/play`, `/how-to-play`, `/categories`, `/about`. Focus and Weekly selection live on `/focus`; shared seed queries canonicalize to that base route rather than creating generated sitemap pages. Draft privacy/terms and the unconfigured contact page remain reachable but use `noindex, follow` until their real operator and mailbox details are supplied.
 
 Support/dynamic: `/challenge/[token]`, `/offline`, `/ads.txt`, manifest, robots, sitemap, Open Graph image, favicon/icon, error and not-found boundaries.
 
@@ -382,7 +382,7 @@ Future docs may state these as acceptance criteria, but must not describe them a
 5. Open `/play?mode=daily`; confirm same UTC seed/session across contexts.
 6. Corrupt/block `one-pixel-off:stats:v1`; confirm gameplay/results remain usable.
 7. Start Focus; verify three charges, find/clean streak semantics, timeout recovery, five-find restoration, and checkpoints at boards 5/10/15.
-8. Verify charge exhaustion, explicit checkpoint finish, deterministic same-seed numbered boards, Weekly automatic completion after board 15, and `/focus?g=1&r=1&seed=…` replay/unsupported-version rejection without score/authentication claims.
+8. Verify charge exhaustion, explicit checkpoint finish, deterministic same-seed numbered boards, Weekly automatic completion after board 15, and `/focus?g=2&r=1&seed=…` replay/unsupported-version rejection without score/authentication claims.
 9. Corrupt/block `one-pixel-off:focus-progress:v1`; verify empty/failure fallback, badge derivation, and UTC Daily activity around gaps/future/invalid dates.
 10. Test invalid/oversized/unsupported Classic challenge path tokens.
 11. Test production navigation failure reaches `/offline`, without claiming full offline gameplay.

@@ -50,12 +50,12 @@ export function FocusRunHud({
           <strong>{Math.max(1, wholeNumber(boardNumber))}</strong>
         </p>
         <p className="focus-hud__difficulty">
-          <span>Difficulty</span>
+          <span>Level</span>
           <strong>{difficulty}</strong>
         </p>
         {recovery ? (
           <p className="focus-hud__recovery" role="status">
-            Recovery board active
+            Bonus +2s
           </p>
         ) : null}
       </div>

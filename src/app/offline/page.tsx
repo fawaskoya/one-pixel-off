@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import {
   Callout,
   ContentPage,
@@ -6,16 +5,19 @@ import {
   InlineLink,
   PrimaryContentLink,
 } from "@/components/content";
+import { createPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata = createPageMetadata({
   title: "You Are Offline",
   description: "Offline recovery options for the One Pixel Off browser game.",
-  robots: { index: false, follow: false },
-};
+  path: "/offline",
+  noIndex: true,
+});
 
 export default function OfflinePage() {
   return (
     <ContentPage
+      path="/offline"
       eyebrow="Connection paused"
       title="You’re offline"
       description="Puzzle generation needs no network, but the application shell must have been saved by your browser during an earlier visit."

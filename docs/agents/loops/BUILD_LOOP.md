@@ -15,7 +15,7 @@ Read `AGENTS.md`, master build prompt, relevant specs, `src/domain/pixel/**`, af
 
 - square grids only 4/5/6;
 - difficulty beginner/steady/tricky/tricky/expert with source constants;
-- xmur3 → mulberry32 generation version 1;
+- xmur3 → mulberry32 generation version 2;
 - one scalar target mutation;
 - phases ready/playing/round_result/session_result;
 - tap reconciles deadline first; `>=` times out;

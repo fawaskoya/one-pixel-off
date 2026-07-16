@@ -8,15 +8,10 @@ const indexableRoutes = [
   "/how-to-play",
   "/categories",
   "/about",
-  "/privacy",
-  "/terms",
-  "/contact",
 ] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return indexableRoutes.map((route, index) => ({
+  return indexableRoutes.map((route) => ({
     url: absoluteUrl(route || "/"),
-    changeFrequency: index < 3 ? "weekly" : "monthly",
-    priority: index === 0 ? 1 : index < 3 ? 0.8 : 0.5,
   }));
 }

@@ -1,21 +1,22 @@
-import type { Metadata } from "next";
 import {
   Callout,
   ContentPage,
   ContentSection,
   PrimaryContentLink,
 } from "@/components/content";
+import { createPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: "How to Play",
+export const metadata = createPageMetadata({
+  title: "How to Play One Pixel Off",
   description:
-    "Learn Focus Run and Classic Five rules for One Pixel Off, including charges, streaks, checkpoints, Daily Scan, scoring, and keyboard play.",
-  alternates: { canonical: "/how-to-play" },
-};
+    "Learn how to spot the one different tile in One Pixel Off, including Focus Run charges, streaks, checkpoints, Daily Scan, scoring, and keyboard controls.",
+  path: "/how-to-play",
+});
 
 export default function HowToPlayPage() {
   return (
     <ContentPage
+      path="/how-to-play"
       eyebrow="Scan protocol"
       title="How to play"
       description="Find the single tile whose geometry breaks the pattern. Play a compact five-board scan or stay in an escalating Focus Run."

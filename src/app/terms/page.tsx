@@ -1,21 +1,23 @@
-import type { Metadata } from "next";
 import {
   Callout,
   ContentPage,
   ContentSection,
   InlineLink,
 } from "@/components/content";
+import { createPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata = createPageMetadata({
   title: "Terms of Use",
   description:
     "Read the launch-stage terms template for using the One Pixel Off visual puzzle game, local scores, and challenges.",
-  alternates: { canonical: "/terms" },
-};
+  path: "/terms",
+  noIndex: true,
+});
 
 export default function TermsPage() {
   return (
     <ContentPage
+      path="/terms"
       eyebrow="Launch-stage template"
       title="Terms of use"
       description="These draft terms describe the intended rules for the first web release. They are not final until the site owner, legal operator, domain, jurisdiction, and service configuration are confirmed."
