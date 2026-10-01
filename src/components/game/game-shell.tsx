@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   PIXEL_ROUND_DURATION_MS,
@@ -77,6 +78,7 @@ export function GameShell({
   challengeError,
 }: GameShellProps) {
   const lockedChallenge = Boolean(challengeSeed);
+  const router = useRouter();
   const [selectedMode, setSelectedMode] = useState<"quick" | "daily">(
     initialMode === "daily" ? "daily" : "quick",
   );
@@ -237,6 +239,11 @@ export function GameShell({
   };
 
   const resetToSetup = (mode: "quick" | "daily" = "quick") => {
+    // A challenge page is locked to its seed; resetting in place would only replay the challenge.
+    if (lockedChallenge) {
+      router.push(mode === "daily" ? "/play?mode=daily" : "/play");
+      return;
+    }
     setState(null);
     setSelectedMode(mode);
     setSetupError(null);
