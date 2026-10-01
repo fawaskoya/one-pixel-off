@@ -2311,7 +2311,14 @@ a {
   padding: 8px 18px 18px;
   border: 1px solid #3f4957;
   border-top: 0;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   background: #10151e;
+}
+
+/* The share panel hangs off the bottom of the run report; square the seam so they read as one card. */
+.focus-summary:has(+ .focus-share-panel) {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
 .focus-share-panel > p {
